@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-07-31",
+  "sourceRepository": "https://github.com/openai/plugins",
+  "sourceCommit": "11c74d6ba24d3a6d48f54a194cd00ef3beea18f9",
+  "marketplaces": [
+    {
+      "name": "openai-curated",
+      "relativePath": "openai-curated",
+      "sha256": "17a0053d11cbdcf65dd791be1e279bad1ff827817d0e337b48638803a8ea4ac5",
+      "size": 141679,
+      "fileCount": 29,
+      "localAdditions": [
+        "plugins/github/LICENSE.plugin-manifest-MIT.txt"
+      ],
+      "plugins": [
+        {"id": "github", "version": "0.1.6", "manifestLicense": "MIT"}
+      ]
+    }
+  ]
+}

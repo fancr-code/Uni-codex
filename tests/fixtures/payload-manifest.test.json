@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-21T00:00:00Z",
+  "files": [
+    {
+      "id": "chatgpt-codex-arm64",
+      "version": "26.715.52143",
+      "architecture": "arm64",
+      "relativePath": "apps/arm64/ChatGPT.app",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "sourceURL": "https://example.invalid/ChatGPT.dmg",
+      "format": "directory",
+      "bundleIdentifier": "com.openai.codex",
+      "teamIdentifier": "2DC432GLL2"
+    },
+    {
+      "id": "chatgpt-codex-x86_64",
+      "version": "26.715.52143",
+      "architecture": "x86_64",
+      "relativePath": "apps/x86_64/ChatGPT.app",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "sourceURL": "https://example.invalid/ChatGPT.dmg",
+      "format": "directory",
+      "bundleIdentifier": "com.openai.codex",
+      "teamIdentifier": "2DC432GLL2"
+    },
+    {
+      "id": "codex-plus-plus-arm64",
+      "version": "1.2.41",
+      "architecture": "arm64",
+      "relativePath": "apps/arm64/CodexPlusPlus",
+      "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "sourceURL": "https://example.invalid/CodexPlusPlus-arm64.dmg",
+      "format": "directory",
+      "compatibilityRevision": "cross-provider-content-v1",
+      "licenseID": "AGPL-3.0-only"
+    },
+    {
+      "id": "codex-plus-plus-x86_64",
+      "version": "1.2.41",
+      "architecture": "x86_64",
+      "relativePath": "apps/x86_64/CodexPlusPlus",
+      "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "sourceURL": "https://example.invalid/CodexPlusPlus-x64.dmg",
+      "format": "directory",
+      "compatibilityRevision": "cross-provider-content-v1",
+      "licenseID": "AGPL-3.0-only"
+    },
+    {
+      "id": "plugin-marketplaces",
+      "version": "2026-07-21",
+      "architecture": "any",
+      "relativePath": "plugins",
+      "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "sourceURL": "https://example.invalid/plugins",
+      "format": "directory"
+    },
+    {
+      "id": "script-market",
+      "version": "2026-07-21",
+      "architecture": "any",
+      "relativePath": "scripts",
+      "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "sourceURL": "https://example.invalid/scripts",
+      "format": "directory"
+    },
+    {
+      "id": "codex-plus-plus-source",
+      "version": "1.0",
+      "architecture": "source",
+      "relativePath": "sources/CodexPlusPlus.tar.gz",
+      "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "sourceURL": "https://example.invalid/source.tar.gz",
+      "format": "archive",
+      "compatibilityRevision": "cross-provider-content-v1",
+      "licenseID": "AGPL-3.0-only"
+    }
+  ]
+}

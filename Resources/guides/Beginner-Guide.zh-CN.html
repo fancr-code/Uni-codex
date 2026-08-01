@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Codex macOS 新手指南</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;max-width:900px;margin:40px auto;padding:0 24px;line-height:1.75;color:#172033}
+    h1,h2{color:#2855a6}.note{border-left:5px solid #2855a6;background:#f1f5ff;padding:12px 16px}
+    table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccd5e0;padding:8px;text-align:left}
+  </style>
+</head>
+<body>
+  <h1>Codex macOS 安装器：新手指南</h1>
+  <div class="note">支持 Apple Silicon 和 Intel Mac。默认使用纯 API；OpenAI 账号授权是可选增强。API Key、OAuth Token、设备码和对话正文不会写入安装报告。</div>
+
+  <h2>选择 API 服务商</h2>
+  <p>支持 DeepSeek、Kimi 开放平台、Kimi Code、智谱 GLM、阿里千问、Xiaomi MiMo。</p>
+  <table>
+    <tr><th>服务商</th><th>官方申请入口</th></tr>
+    <tr><td>DeepSeek</td><td>https://platform.deepseek.com/api_keys</td></tr>
+    <tr><td>Kimi 开放平台</td><td>https://platform.moonshot.cn/console/api-keys</td></tr>
+    <tr><td>Kimi Code</td><td>https://www.kimi.com/code/console</td></tr>
+    <tr><td>智谱 GLM</td><td>https://bigmodel.cn/usercenter/apikeys</td></tr>
+    <tr><td>阿里千问</td><td>https://bailian.console.aliyun.com/cn-beijing?tab=model</td></tr>
+    <tr><td>Xiaomi MiMo</td><td>https://platform.xiaomimimo.com/</td></tr>
+  </table>
+  <p>安装器优先从所选服务商刷新上游模型，失败时使用离线快照；Kimi 开放平台快照包含 Kimi K3。实际模型调用和模型刷新需要网络，并由所选服务商处理和计费。</p>
+  <p>“离线安装”表示应用、插件和脚本 payload 已包含在 DMG 中；实际模型调用、上游刷新和账号授权仍需要网络。</p>
+
+  <h2>OpenAI 账号授权</h2>
+  <p>推荐“OpenAI 账号 + 所选国产 API”。点击安装器内“获取 OpenAI 授权”完成浏览器或设备码流程。
+     授权不等于 GPT API Key，不提供 GPT API 额度，也不会获得账号未拥有的权限；模型仍由所选服务商调用。</p>
+
+  <h2>安装与隐私</h2>
+  <ul>
+    <li>健康 Codex 直接复用，不重复安装或降级。</li>
+    <li>已有正确修订的 Codex++ 启动器与管理工具成对复用；旧版、未修补版或两者不一致时成对升级。</li>
+    <li>Codex++ 使用 cross-provider-content-v1；跨供应商旧会话仅在本机转换，日志不记录消息正文。</li>
+    <li>配置 3 个插件市场、9 个插件和完整脚本市场。</li>
+    <li>默认启用 Context Used Meter 与 Codex Token Usage。</li>
+    <li>API Key、OAuth Token、设备码、日志与报告均排除敏感内容或脱敏。</li>
+  </ul>
+  <p>Context Used Meter 位于会话页左上角的可拖动浮窗，Codex Token Usage 位于最新助手消息的操作区。
+     可在 Codex++ 的 Scripts/脚本市场关闭对应名称的开关，关闭不会删除会话或 API 配置。</p>
+
+  <h2>备份、恢复与回滚</h2>
+  <p>备份位于 <code>~/Library/Application Support/Codex One Click Installer/backups</code>。
+     可重新运行安装器选择“恢复最近备份”；取消或失败时安装事务自动回滚。</p>
+
+  <h2>Uni-Scholar 生态优势</h2>
+  <p><a href="https://uni-scholar.asia">Uni-Scholar 云端工作站</a>负责云端检索、协作和长流程任务；
+     <a href="https://uni-scholar.asia/research-kit">Research Kit 本地中枢</a>连接 Zotero、Obsidian 与本地知识库；
+     Codex/Codex++ 执行层完成代码、文档、数据和自动化。三层形成连续科研工作流。</p>
+</body>
+</html>

@@ -1,0 +1,55 @@
+Codex Windows 离线安装器
+========================
+
+公开源码状态
+------------
+当前公开仓库不镜像官方 Codex 桌面 MSIX。请先从 Microsoft Store 官方页面安装 Codex：
+https://apps.microsoft.com/detail/9PLM9XGG6VKS
+然后使用 Uni-codex；安装器会复用健康的现有 Codex。
+
+最低系统：Windows 10 1809（Build 17763），x64。
+先用 Get-FileHash 核对 SHA-256，再运行 EXE。旧 PowerShell 一键入口、ZIP 正式包和第三方镜像均不是正式安装方式。
+当前 EXE 为 unsigned，可能触发 SmartScreen。SHA-256 匹配只证明文件与 Release 一致，不替代发布者签名；来源或哈希不可信时请取消。
+
+完整使用步骤（1-5）
+------------------
+1. 从 Microsoft Store 官方页面安装 Codex，确认 Windows Build >= 17763 且为 x64。
+2. 先核对文件名和 SHA-256。两者匹配后，SmartScreen 如有提示可选“更多信息”→“仍要运行”；不匹配就取消。
+3. 选择服务商、模型和纯 API / OpenAI 账号 + 所选国产 API 模式，按需打开官方 API Key 申请页。
+4. 点击开始安装；健康 Codex 会直接复用。取消或失败时事务自动回滚。
+5. 从完成页检查结果并打开脱敏报告。报告位于 %LOCALAPPDATA%\Codex One Click Installer\reports。
+
+默认纯 API
+----------
+支持 DeepSeek、Kimi 开放平台、Kimi Code、智谱 GLM、阿里千问、Xiaomi MiMo。
+安装器内官方申请链接：
+- DeepSeek：https://platform.deepseek.com/api_keys
+- Kimi 开放平台：https://platform.moonshot.cn/console/api-keys
+- Kimi Code：https://www.kimi.com/code/console
+- 智谱 GLM：https://bigmodel.cn/usercenter/apikeys
+- 阿里千问：https://bailian.console.aliyun.com/cn-beijing?tab=model
+- Xiaomi MiMo：https://platform.xiaomimimo.com/
+
+安装器优先从所选服务商刷新上游模型，失败时使用随包校验的离线快照；Kimi 开放平台快照包含 Kimi K3。实际模型调用、授权和上游刷新需要网络。
+
+OpenAI 账号是可选增强
+---------------------
+推荐“OpenAI 账号 + 所选国产 API”。可在安装器内点击“获取 OpenAI 授权”。
+授权不等于 GPT API Key，不提供 GPT API 额度，也不增加账号未拥有的权限；模型仍由所选服务商调用和计费。
+
+安装内容与安全
+--------------
+- 健康 Codex 直接复用，不重复安装或降级。
+- Codex++ 包含 cross-provider-content-v1。
+- 预配置 3 个市场、9 个插件；5 个插件离线实装，4 个官方生产力插件由 Codex 在联网且权限满足时供应。
+- 默认启用 Context Used Meter 与 Codex Token Usage。
+- API Key、OAuth Token、设备码、日志和安装报告均排除敏感内容或脱敏。
+Context Used Meter 位于会话页左上角的可拖动浮窗；Codex Token Usage 位于最新助手消息的操作区。
+要关闭任一项，请在 Codex++ 的 Scripts/脚本市场中关闭对应名称的开关。
+
+Uni-Scholar 生态优势
+--------------------
+Uni-Scholar 云端工作站：https://uni-scholar.asia
+Research Kit 本地中枢：https://uni-scholar.asia/research-kit
+Research Kit 连接 Zotero、Obsidian 与本地知识库，Codex/Codex++ 是执行层；三者形成连续科研工作流。
+Research Kit 是 macOS 生态链接与可选配套，不随 Windows 安装包预装。

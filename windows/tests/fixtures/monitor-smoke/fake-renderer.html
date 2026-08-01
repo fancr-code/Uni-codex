@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Codex++ monitor smoke fixture</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 14px system-ui, sans-serif; }
+    #titlebar { height: 36px; display: flex; justify-content: flex-end; gap: 4px; padding: 4px; }
+    main { min-height: calc(100vh - 36px); display: flex; flex-direction: column; padding: 24px; }
+    [data-testid="conversation-turns"] { flex: 1; min-height: 360px; }
+    form { border: 1px solid #aaa; border-radius: 12px; padding: 12px; }
+    textarea { display: block; width: 100%; min-height: 80px; margin: 10px 0; }
+    .composer-footer { display: flex; justify-content: flex-end; }
+    .justify-end { display: flex; flex: 1; justify-content: flex-end; gap: 8px; }
+    .flex-1 { display: flex; flex: 1; justify-content: flex-end; gap: 8px; min-width: 0; }
+  </style>
+</head>
+<body>
+  <header id="titlebar">
+    <button data-testid="window-minimize" type="button">—</button>
+    <button data-testid="window-maximize" type="button">□</button>
+    <button data-testid="window-close" type="button">×</button>
+  </header>
+  <main data-testid="thread-content">
+    <section data-testid="conversation-turns" data-thread-find-target="conversation"
+             data-conversation-id="monitor-smoke-thread">
+      <article data-message-author-role="assistant">
+        <p>Monitor smoke runtime response.</p>
+        <button aria-label="Copy" type="button">Copy</button>
+      </article>
+    </section>
+    <form data-testid="composer">
+      <textarea aria-label="消息"></textarea>
+      <div class="composer-footer">
+        <div class="justify-end">
+          <div class="flex-1"><button data-testid="model" type="button">模型</button></div>
+          <button data-testid="attachment" type="button">附件</button>
+          <button data-testid="send" type="submit">发送</button>
+        </div>
+      </div>
+    </form>
+  </main>
+  <div hidden data-fixture-secret="fixture-monitor-secret-do-not-report"></div>
+  <script>
+    window.__CODEX_TOKEN_USAGE_SCRIPT_TEST__ = true;
+    const conversationSurface = document.querySelector('[data-testid="conversation-turns"]');
+    const activeThread = document.createElement('div');
+    activeThread.hidden = true;
+    activeThread.setAttribute('data-app-action-sidebar-thread-active', 'true');
+    activeThread.setAttribute('data-app-action-sidebar-thread-id', 'monitor-smoke-thread');
+    document.body.append(activeThread);
+    window.__codexTestContextState = {
+      conversationId: 'monitor-smoke-thread',
+      usedTokens: 2400,
+      contextWindow: 12000,
+    };
+    window.__codexRuntimeFixture = {
+      setConversation(conversationId, usedTokens, contextWindow = 12000) {
+        conversationSurface.dataset.conversationId = conversationId;
+        activeThread.setAttribute('data-app-action-sidebar-thread-id', conversationId);
+        window.__codexTestContextState = { conversationId, usedTokens, contextWindow };
+      },
+    };
+  </script>
+</body>
+</html>

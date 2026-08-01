@@ -1,0 +1,7 @@
+{
+  "chatgptCodexMacArm64": "https://persistent.oaistatic.com/codex-app-prod/Codex.dmg",
+  "chatgptCodexMacX64": "https://persistent.oaistatic.com/codex-app-prod/Codex-latest-x64.dmg",
+  "codexPlusPlusLatest": "https://api.github.com/repos/BigPizzaV3/CodexPlusPlus/releases/latest",
+  "codexPlusPlusSource": "https://github.com/BigPizzaV3/CodexPlusPlus/archive/refs/tags/{tag}.tar.gz",
+  "scriptMarket": "https://raw.githubusercontent.com/BigPizzaV3/CodexPlusPlusScriptMarket/main/index.json"
+}

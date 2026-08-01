@@ -1,0 +1,10 @@
+build/
+dist/
+vendor/offline-payloads/
+Resources/payload-manifest.json
+Resources/installer-support
+*.download
+*.dmg
+*.key
+*.log
+.DS_Store

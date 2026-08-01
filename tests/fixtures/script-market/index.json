@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "updated_at": "2026-07-21T00:00:00Z",
+  "scripts": [
+    {
+      "id": "codex-zhcn-translate",
+      "name": "Codex 中文翻译",
+      "version": "1.0.0",
+      "homepage": "https://example.com/codex-zhcn-translate",
+      "script_url": "https://example.com/codex-zhcn-translate.js",
+      "sha256": "b7fdcc550ebb1828a0f8a30216efeab4647a5d891d8ef9afc3247058c0eed6b5"
+    },
+    {
+      "id": "codex-context-used-meter",
+      "name": "Context Used Meter",
+      "version": "101",
+      "homepage": "https://example.com/codex-context-used-meter",
+      "script_url": "https://example.com/codex-context-used-meter.js",
+      "sha256": "2355c76bc467f5ba25f56ead9abf3ee1dc1c8653a6d6d9d0f0846d7b89b65798"
+    },
+    {
+      "id": "codex-token-usage",
+      "name": "Codex Token Usage",
+      "version": "0.1.7",
+      "homepage": "https://example.com/codex-token-usage",
+      "script_url": "https://example.com/codex-token-usage.js",
+      "sha256": "15f97d3ecd87886cf9c6c47dd0e6040ac422a0c659d3e32ea169932f79377467"
+    },
+    {
+      "id": "codex-daily-token-usage",
+      "name": "Codex Daily Token Usage",
+      "version": "1.4.13",
+      "homepage": "https://example.com/codex-daily-token-usage",
+      "script_url": "https://example.com/codex-daily-token-usage.js",
+      "sha256": "e5060f06cd96022c315892e54e96958d7dc7753bcf857f23d734b8b474cb7c59"
+    },
+    {
+      "id": "codex-live-token-cost",
+      "name": "Codex Live Token Cost",
+      "version": "0.7.2",
+      "homepage": "https://example.com/codex-live-token-cost",
+      "script_url": "https://example.com/codex-live-token-cost.js",
+      "sha256": "bd433af9ba95637e0a6babb7728e50d50d3ef44763a3e7d1ec47e4d9c25ece82"
+    },
+    {
+      "id": "another-script",
+      "name": "Another Script",
+      "version": "1.0.0",
+      "homepage": "https://example.com/another-script",
+      "script_url": "https://example.com/another-script.js",
+      "sha256": "d4b0b13cb39841af29bf595fe1c79b272790f57506392f4a141dc0c0e3485442"
+    }
+  ]
+}

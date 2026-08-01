@@ -1,0 +1,531 @@
+diff --git a/apps/codex-plus-manager/src-tauri/src/commands.rs b/apps/codex-plus-manager/src-tauri/src/commands.rs
+index a0aaa27..ebaf024 100644
+--- a/apps/codex-plus-manager/src-tauri/src/commands.rs
++++ b/apps/codex-plus-manager/src-tauri/src/commands.rs
+@@ -440,6 +440,12 @@ pub fn startup_options() -> CommandResult<StartupPayload> {
+         },
+     )
+ }
++#[tauri::command]
++pub fn take_content_compatibility_notice()
++-> Result<Option<codex_plus_core::compatibility_notice::ContentRepairNotice>, String> {
++    codex_plus_core::compatibility_notice::take_content_repair_notice()
++        .map_err(|error| error.to_string())
++}
+ 
+ pub fn startup_should_show_update() -> bool {
+     should_show_update(
+diff --git a/apps/codex-plus-manager/src-tauri/src/lib.rs b/apps/codex-plus-manager/src-tauri/src/lib.rs
+index 60a385b..ad23d72 100644
+--- a/apps/codex-plus-manager/src-tauri/src/lib.rs
++++ b/apps/codex-plus-manager/src-tauri/src/lib.rs
+@@ -64,6 +64,7 @@ pub fn run() {
+         .invoke_handler(tauri::generate_handler![
+             commands::backend_version,
+             commands::startup_options,
++            commands::take_content_compatibility_notice,
+             commands::load_overview,
+             commands::launch_codex_plus,
+             commands::restart_codex_plus,
+diff --git a/apps/codex-plus-manager/src/App.tsx b/apps/codex-plus-manager/src/App.tsx
+index 536cc0b..d51369f 100644
+--- a/apps/codex-plus-manager/src/App.tsx
++++ b/apps/codex-plus-manager/src/App.tsx
+@@ -738,6 +738,10 @@ function syncMarketInstalledState(current: ScriptMarketResult | null, userScript
+ type StartupResult = CommandResult<{
+   showUpdate: boolean;
+ }>;
++type ContentCompatibilityNotice = {
++  repairedMessageCount: number;
++  timestampMs: number;
++};
+ 
+ type Route = "overview" | "relay" | "relayEnvironment" | "sessions" | "context" | "enhance" | "dreamSkin" | "zedRemote" | "userScripts" | "recommendations" | "maintenance" | "about" | "settings";
+ type Theme = "dark" | "light";
+@@ -943,6 +947,24 @@ export function App() {
+       return null;
+     }
+   };
++  const refreshContentCompatibilityNotice = async () => {
++    try {
++      const result = await call<ContentCompatibilityNotice | null>(
++        "take_content_compatibility_notice",
++      );
++      if (result && result.repairedMessageCount > 0) {
++        showNotice(
++          t("跨模型兼容"),
++          tf("已兼容转换 {0} 条旧会话内容，可继续使用当前任务。", [
++            result.repairedMessageCount,
++          ]),
++          "ok",
++        );
++      }
++    } catch {
++      // A missing notice must never interrupt the manager.
++    }
++  };
+ 
+   const refreshOverview = async (silent = false) => {
+     const result = await run(() => call<OverviewResult>("load_overview"));
+@@ -2330,6 +2352,7 @@ export function App() {
+   useEffect(() => {
+     void (async () => {
+       const startup = await run(() => call<StartupResult>("startup_options"));
++      await refreshContentCompatibilityNotice();
+       if (startup?.showUpdate) {
+         setRoute("about");
+         void checkUpdate(false);
+@@ -2359,6 +2382,7 @@ export function App() {
+ 
+   useEffect(() => {
+     const timer = window.setInterval(() => {
++      void refreshContentCompatibilityNotice();
+       void refreshPendingProviderImport(true);
+     }, 1200);
+     return () => window.clearInterval(timer);
+diff --git a/assets/inject/upstream/dream-skin/macos/renderer-inject.js b/assets/inject/upstream/dream-skin/macos/renderer-inject.js
+index fe42767..9988cf1 100644
+--- a/assets/inject/upstream/dream-skin/macos/renderer-inject.js
++++ b/assets/inject/upstream/dream-skin/macos/renderer-inject.js
+@@ -751,12 +751,12 @@
+   });
+   rootObserver.observe(document.documentElement, {
+     attributes: true,
+-    attributeFilter: ["class", "data-theme", "data-appearance", "data-color-mode", "style"],
++    attributeFilter: ["class", "data-theme", "data-appearance", "data-color-mode"],
+   });
+   if (document.body) {
+     rootObserver.observe(document.body, {
+       attributes: true,
+-      attributeFilter: ["class", "data-theme", "data-appearance", "data-color-mode", "style"],
++      attributeFilter: ["class", "data-theme", "data-appearance", "data-color-mode"],
+     });
+   }
+   const timer = setInterval(() => ensure(), 4000);
+diff --git a/crates/codex-plus-core/src/compatibility_notice.rs b/crates/codex-plus-core/src/compatibility_notice.rs
+new file mode 100644
+index 0000000..2042364
+--- /dev/null
++++ b/crates/codex-plus-core/src/compatibility_notice.rs
+@@ -0,0 +1,88 @@
++use std::io;
++use std::path::PathBuf;
++use std::sync::{Mutex, OnceLock};
++use std::time::{SystemTime, UNIX_EPOCH};
++
++use serde::{Deserialize, Serialize};
++
++const NOTICE_FILE: &str = "content-compatibility-notice.json";
++
++static NOTICE_IO_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
++static TEST_NOTICE_PATH: OnceLock<Mutex<Option<PathBuf>>> = OnceLock::new();
++
++#[derive(Debug, Clone, Serialize, Deserialize)]
++#[serde(rename_all = "camelCase")]
++pub struct ContentRepairNotice {
++    pub repaired_message_count: usize,
++    pub timestamp_ms: u64,
++}
++
++pub fn record_content_repair(repaired_message_count: usize) -> io::Result<()> {
++    if repaired_message_count == 0 {
++        return Ok(());
++    }
++
++    let _guard = notice_io_lock()?;
++    let path = notice_path();
++    if let Some(parent) = path.parent() {
++        std::fs::create_dir_all(parent)?;
++    }
++    let previous_count = match std::fs::read(&path) {
++        Ok(bytes) => serde_json::from_slice::<ContentRepairNotice>(&bytes)
++            .map(|notice| notice.repaired_message_count)
++            .unwrap_or(0),
++        Err(error) if error.kind() == io::ErrorKind::NotFound => 0,
++        Err(error) => return Err(error),
++    };
++    let notice = ContentRepairNotice {
++        repaired_message_count: previous_count.saturating_add(repaired_message_count),
++        timestamp_ms: now_ms(),
++    };
++    let bytes = serde_json::to_vec(&notice)
++        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
++    crate::settings::atomic_write(&path, &bytes).map_err(io::Error::other)
++}
++
++pub fn take_content_repair_notice() -> io::Result<Option<ContentRepairNotice>> {
++    let _guard = notice_io_lock()?;
++    let path = notice_path();
++    let bytes = match std::fs::read(&path) {
++        Ok(bytes) => bytes,
++        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
++        Err(error) => return Err(error),
++    };
++    let notice = serde_json::from_slice(&bytes)
++        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
++    std::fs::remove_file(path)?;
++    Ok(Some(notice))
++}
++
++fn notice_path() -> PathBuf {
++    if let Ok(guard) = TEST_NOTICE_PATH.get_or_init(|| Mutex::new(None)).lock() {
++        if let Some(path) = &*guard {
++            return path.clone();
++        }
++    }
++    crate::paths::default_app_state_dir().join(NOTICE_FILE)
++}
++
++fn notice_io_lock() -> io::Result<std::sync::MutexGuard<'static, ()>> {
++    NOTICE_IO_LOCK
++        .get_or_init(|| Mutex::new(()))
++        .lock()
++        .map_err(|_| io::Error::other("compatibility notice lock poisoned"))
++}
++
++fn now_ms() -> u64 {
++    SystemTime::now()
++        .duration_since(UNIX_EPOCH)
++        .unwrap_or_default()
++        .as_millis() as u64
++}
++
++#[doc(hidden)]
++pub fn set_notice_path_for_tests(path: Option<PathBuf>) {
++    if let Ok(mut guard) = TEST_NOTICE_PATH.get_or_init(|| Mutex::new(None)).lock() {
++        *guard = path;
++    }
++}
+diff --git a/crates/codex-plus-core/src/lib.rs b/crates/codex-plus-core/src/lib.rs
+index 203b411..4b6b143 100644
+--- a/crates/codex-plus-core/src/lib.rs
++++ b/crates/codex-plus-core/src/lib.rs
+@@ -8,6 +8,7 @@ pub mod codex_app_state;
+ pub mod codex_home;
+ pub mod codex_local_storage;
+ pub mod codex_sqlite;
++pub mod compatibility_notice;
+ mod computer_use_guard;
+ pub mod diagnostic_log;
+ pub mod dream_skin;
+diff --git a/crates/codex-plus-core/src/protocol_proxy.rs b/crates/codex-plus-core/src/protocol_proxy.rs
+index ada6885..e623f37 100644
+--- a/crates/codex-plus-core/src/protocol_proxy.rs
++++ b/crates/codex-plus-core/src/protocol_proxy.rs
+@@ -149,6 +149,19 @@ pub fn responses_to_chat_completions(body: Value) -> anyhow::Result<Value> {
+         append_responses_input(input, &mut messages);
+     }
+     normalize_chat_messages(&mut messages);
++    let compatibility_repair = normalize_chat_message_contents(&mut messages);
++    if compatibility_repair.repaired_message_count > 0 {
++        let _ = crate::compatibility_notice::record_content_repair(
++            compatibility_repair.repaired_message_count,
++        );
++        let _ = crate::diagnostic_log::append_diagnostic_log(
++            "protocol_proxy.content_compatibility",
++            json!({
++                "repairedMessageCount": compatibility_repair.repaired_message_count,
++                "originalTypes": compatibility_repair.original_types
++            }),
++        );
++    }
+     let messages = collapse_system_messages_to_head(messages);
+     result["messages"] = json!(messages);
+ 
+@@ -2160,6 +2173,125 @@ fn normalize_chat_messages(messages: &mut [Value]) {
+     }
+ }
+ 
++#[derive(Default)]
++struct ContentCompatibilityRepair {
++    repaired_message_count: usize,
++    original_types: Vec<&'static str>,
++}
++
++fn normalize_chat_message_contents(messages: &mut [Value]) -> ContentCompatibilityRepair {
++    let mut report = ContentCompatibilityRepair::default();
++    for message in messages {
++        let Some(object) = message.as_object_mut() else {
++            continue;
++        };
++        let original = object.get("content").cloned().unwrap_or(Value::Null);
++        let (normalized, repaired) = normalize_chat_content(&original);
++        if repaired {
++            report.repaired_message_count += 1;
++            let original_type = json_value_type(&original);
++            if !report.original_types.contains(&original_type) {
++                report.original_types.push(original_type);
++            }
++        }
++        object.insert("content".to_string(), normalized);
++    }
++    report
++}
++
++fn normalize_chat_content(content: &Value) -> (Value, bool) {
++    match content {
++        Value::String(_) => (content.clone(), false),
++        Value::Array(parts) => {
++            let safe_parts = parts
++                .iter()
++                .filter_map(normalize_chat_part)
++                .collect::<Vec<_>>();
++            let repaired =
++                safe_parts.len() != parts.len() || safe_parts.as_slice() != parts.as_slice();
++            if safe_parts.is_empty() {
++                (Value::String(String::new()), true)
++            } else {
++                (Value::Array(safe_parts), repaired)
++            }
++        }
++        Value::Null => (Value::String(String::new()), true),
++        Value::Bool(value) => (Value::String(value.to_string()), true),
++        Value::Number(value) => (Value::String(value.to_string()), true),
++        Value::Object(_) => (Value::String(extract_compatible_text(content)), true),
++    }
++}
++
++fn normalize_chat_part(part: &Value) -> Option<Value> {
++    let Some(object) = part.as_object() else {
++        let text = extract_compatible_text(part);
++        return (!text.is_empty()).then(|| json!({ "type": "text", "text": text }));
++    };
++    match object.get("type").and_then(Value::as_str) {
++        Some("text") => object
++            .get("text")
++            .and_then(Value::as_str)
++            .filter(|text| !text.is_empty())
++            .map(|text| json!({ "type": "text", "text": text })),
++        Some("image_url") => object.get("image_url").and_then(|image_url| {
++            if image_url.is_string() || image_url.is_object() {
++                Some(json!({ "type": "image_url", "image_url": image_url }))
++            } else {
++                None
++            }
++        }),
++        _ => {
++            let text = extract_compatible_text(part);
++            (!text.is_empty()).then(|| json!({ "type": "text", "text": text }))
++        }
++    }
++}
++
++fn extract_compatible_text(value: &Value) -> String {
++    if let Some(text) = value.as_str() {
++        return text.to_string();
++    }
++    if let Some(object) = value.as_object() {
++        for key in ["text", "content", "output_text", "refusal"] {
++            if let Some(candidate) = object.get(key) {
++                let text = extract_compatible_text(candidate);
++                if !text.trim().is_empty() {
++                    return text;
++                }
++            }
++        }
++        return format!(
++            "[兼容转换的历史内容] {}",
++            serde_json::to_string(value).unwrap_or_else(|_| "{}".to_string())
++        );
++    }
++    if let Some(parts) = value.as_array() {
++        return parts
++            .iter()
++            .map(extract_compatible_text)
++            .filter(|text| !text.trim().is_empty())
++            .collect::<Vec<_>>()
++            .join("\n");
++    }
++    match value {
++        Value::Null => String::new(),
++        Value::Bool(value) => value.to_string(),
++        Value::Number(value) => value.to_string(),
++        Value::String(_) | Value::Array(_) | Value::Object(_) => unreachable!(),
++    }
++}
++
++fn json_value_type(value: &Value) -> &'static str {
++    match value {
++        Value::Null => "null",
++        Value::Bool(_) => "boolean",
++        Value::Number(_) => "number",
++        Value::String(_) => "string",
++        Value::Array(_) => "array",
++        Value::Object(_) => "object",
++    }
++}
++
+ fn collapse_system_messages_to_head(messages: Vec<Value>) -> Vec<Value> {
+     let mut system_chunks = Vec::new();
+     let mut rest = Vec::with_capacity(messages.len());
+@@ -2330,7 +2462,12 @@ fn responses_content_to_chat_content(_role: &str, content: &Value) -> Value {
+                     has_non_text_part = true;
+                 }
+             }
+-            _ => {}
++            _ => {
++                chat_parts.push(json!({
++                    "type": "text",
++                    "text": extract_compatible_text(part)
++                }));
++            }
+         }
+     }
+ 
+diff --git a/scripts/installer/macos/package-dmg.sh b/scripts/installer/macos/package-dmg.sh
+index 287778e..b59aa03 100755
+--- a/scripts/installer/macos/package-dmg.sh
++++ b/scripts/installer/macos/package-dmg.sh
+@@ -3,6 +3,7 @@ set -euo pipefail
+ 
+ VERSION="${1:-0.0.0}"
+ ARCH="${2:-$(uname -m)}"
++CODEXKIT_COMPATIBILITY_REVISION="${CODEXKIT_COMPATIBILITY_REVISION:?compatibility revision is required}"
+ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+ DIST="$ROOT/dist/macos"
+ STAGE="$DIST/stage"
+@@ -68,6 +69,8 @@ create_app() {
+   <string>$VERSION</string>
+   <key>CFBundleShortVersionString</key>
+   <string>$VERSION</string>
++  <key>CodexKitCompatibilityRevision</key>
++  <string>$CODEXKIT_COMPATIBILITY_REVISION</string>
+   <key>CFBundleInfoDictionaryVersion</key>
+   <string>6.0</string>
+   <key>CFBundlePackageType</key>
+diff --git a/crates/codex-plus-core/src/dream_skin.rs b/crates/codex-plus-core/src/dream_skin.rs
+index 887c536..6e1c6c6 100644
+--- a/crates/codex-plus-core/src/dream_skin.rs
++++ b/crates/codex-plus-core/src/dream_skin.rs
+@@ -151 +151 @@ fn prepare_image(
+-    _extension: &str,
++    extension: &str,
+@@ -152,0 +153,3 @@ fn prepare_image(
++    if matches!(extension, "jpg" | "jpeg") {
++        return Ok((source.to_path_buf(), "jpg".to_string()));
++    }
+diff --git a/crates/codex-plus-core/tests/dream_skin.rs b/crates/codex-plus-core/tests/dream_skin.rs
+index 0356d1c..1a71bc9 100644
+--- a/crates/codex-plus-core/tests/dream_skin.rs
++++ b/crates/codex-plus-core/tests/dream_skin.rs
+@@ -108,0 +109 @@ fn imports_supported_image_into_managed_theme_directory() {
++    #[cfg(target_os = "macos")]
+@@ -111 +112 @@ fn imports_supported_image_into_managed_theme_directory() {
+-        Some("current.png")
++        Some("current.jpg")
+@@ -113 +114,14 @@ fn imports_supported_image_into_managed_theme_directory() {
+-    assert_eq!(std::fs::read(&imported).unwrap(), image);
++    #[cfg(target_os = "macos")]
++    assert!(
++        std::fs::read(&imported)
++            .unwrap()
++            .starts_with(&[0xff, 0xd8, 0xff])
++    );
++    #[cfg(not(target_os = "macos"))]
++    {
++        assert_eq!(
++            imported.file_name().and_then(|name| name.to_str()),
++            Some("current.png")
++        );
++        assert_eq!(std::fs::read(&imported).unwrap(), image);
++    }
+@@ -116,0 +131,18 @@ fn imports_supported_image_into_managed_theme_directory() {
++#[cfg(target_os = "macos")]
++#[test]
++fn imports_existing_jpeg_without_lossy_reencoding() {
++    let temp = tempfile::tempdir().unwrap();
++    let source = temp.path().join("source.jpg");
++    let image =
++        include_bytes!("../../../assets/inject/upstream/dream-skin/windows/dream-reference.jpg");
++    std::fs::write(&source, image).unwrap();
++
++    let imported = import_dream_skin_image(&source, temp.path()).unwrap();
++
++    assert_eq!(
++        imported.file_name().and_then(|name| name.to_str()),
++        Some("current.jpg")
++    );
++    assert_eq!(std::fs::read(imported).unwrap(), image);
++}
++
+@@ -128,0 +161 @@ fn rejects_source_larger_than_fifty_mebibytes() {
++#[cfg(not(target_os = "macos"))]
+@@ -140,0 +174,12 @@ fn rejects_prepared_image_larger_than_sixteen_mebibytes() {
++#[cfg(target_os = "macos")]
++#[test]
++fn rejects_invalid_image_during_macos_preparation() {
++    let temp = tempfile::tempdir().unwrap();
++    let source = temp.path().join("invalid.png");
++    std::fs::write(&source, b"not a valid image").unwrap();
++
++    let error = import_dream_skin_image(&source, temp.path()).unwrap_err();
++
++    assert!(error.to_string().contains("macOS could not convert"));
++}
++
+diff --git a/crates/codex-plus-core/tests/dream_skin_market.rs b/crates/codex-plus-core/tests/dream_skin_market.rs
+index 5536ba1..2fa9934 100644
+--- a/crates/codex-plus-core/tests/dream_skin_market.rs
++++ b/crates/codex-plus-core/tests/dream_skin_market.rs
+@@ -58 +58 @@ async fn installs_verified_market_theme_into_local_library() {
+-    let image = b"\x89PNG\r\n\x1a\nmarket-image";
++    let image = include_bytes!("../../../assets/inject/dream-skin-default.png");
+@@ -85 +85,5 @@ async fn installs_verified_market_theme_into_local_library() {
+-            .join("dream-skin/themes/market-demo/image.png")
++            .join(if cfg!(target_os = "macos") {
++                "dream-skin/themes/market-demo/image.jpg"
++            } else {
++                "dream-skin/themes/market-demo/image.png"
++            })
+diff --git a/crates/codex-plus-core/tests/upstream_theme_assets.rs b/crates/codex-plus-core/tests/upstream_theme_assets.rs
+index 317d883..1eedc29 100644
+--- a/crates/codex-plus-core/tests/upstream_theme_assets.rs
++++ b/crates/codex-plus-core/tests/upstream_theme_assets.rs
+@@ -22 +22 @@ fn bundled_target_renderers_and_styles_remain_byte_exact() {
+-            "D9383160DB0A71CE8219A845D3C300AFDDC874932B533FE3550DA723125E38A5",
++            "74D3BFB0F0F55C138EE3B0933F7B55BC11F71D09F1B07794BCA51B6598DE203D",
+@@ -26 +26 @@ fn bundled_target_renderers_and_styles_remain_byte_exact() {
+-            "99DD5DA043DCE71766E4C01BECA22A123284BA5DCD72D75AA9D36B4549B7D542",
++            "12848DA7DDAACF1B0F18CD419B2B27A6355DCBCE01AF650F1BCE14D99FEBD532",
+@@ -30 +30 @@ fn bundled_target_renderers_and_styles_remain_byte_exact() {
+-            "806D23E953CE356DA621E164467141E7CA8B28235562F4252386FDABF952A5B5",
++            "2704C39506C66554C3529BF0D15B876B4AEC2DD9A36B1796AB43E19C33A046FC",
+@@ -34 +34 @@ fn bundled_target_renderers_and_styles_remain_byte_exact() {
+-            "BBC44EBE8EEAA6A8F25BB00559C30294816FB185A86CD2BD425E061BFF57E05F",
++            "EC3C3BC5F6E10E20A3F2307796BD1E1350E80E5D23D37318EE5468833C95A6DF",
+@@ -38 +38 @@ fn bundled_target_renderers_and_styles_remain_byte_exact() {
+-            "97C1F062F6695C19469E851390974121F29C66B690C4790E761C0E1F82586EF1",
++            "0BFB5F66A0323BF1392B42033E66904DE3EC4BFC8A5BA297F2BB92A4A6740A34",
+@@ -42 +42 @@ fn bundled_target_renderers_and_styles_remain_byte_exact() {
+-            "82ECECF50F3595B80BD148D55246FA2871E3F3D0A2C9031F5BAD8B5E6413E666",
++            "482A60AF98DD6B460BF624C56918C5B57F9CCD5B55E52FA46D486F7D65259D9A",
+@@ -46 +46 @@ fn bundled_target_renderers_and_styles_remain_byte_exact() {
+-            "09F5BF89BFD8DA90E0E3FD74CA840AD417B63BDF6E5DFDBCB720FD1A6B1FF54E",
++            "4E2A74A337B4AB5EE12FE307565C1E6A309FDA8911DFA75C4B9BE8849C7BFF3C",
+@@ -50 +50 @@ fn bundled_target_renderers_and_styles_remain_byte_exact() {
+-            "662B04F2E74570770394E3D6F012F6B5952C50E55A1AD47B1577161F860D775D",
++            "5E149E9A13985961C5F3125296178ACB2ABF0B528974F1E616AA625970430562",
+@@ -62 +62 @@ fn bundled_target_renderers_and_styles_remain_byte_exact() {
+-            "57A529C0F5743CC7068B5F9064AAB098137520A051E5B0C5A45AD2DFAB91E98C",
++            "D14943E95DB62DB81BF29D9CF14FCAF1DD1EA9A9625245C020865127EEA295A2",
+@@ -66 +66 @@ fn bundled_target_renderers_and_styles_remain_byte_exact() {
+-            "84D4AF19D9D5B7D5934139892F83CDB58B5EB370598D775A54587C285A2C8BC1",
++            "4C37C53544EE4F1CD93BA5D0DC3E174B05D4CB84EC9A436295D11D19F0BB04F1",
+@@ -78 +78 @@ fn bundled_skin_pack_theme_files_remain_byte_exact() {
+-            "68F6AA3C9C68D18014D51E7076A71D9B3F5CA156F339CE3F001F394F0217F941",
++            "379CB601522E7A5C2FC906E3D8BD5C7C64385FBD2A428798F8D169DEB7026F2E",
+@@ -82 +82 @@ fn bundled_skin_pack_theme_files_remain_byte_exact() {
+-            "02D886D75F779E30E05EB6D6CABC68A9A07EB94B9BCCB4561B82A511DE14F31D",
++            "0CFF815EC9582B88ECF4AD9E7562D7DFF32904FA8F09338811397960D62FD7D4",
+@@ -86 +86 @@ fn bundled_skin_pack_theme_files_remain_byte_exact() {
+-            "5E9947AF7AA00A5CC871330AD55CD9694E49AF54F265C622293C386519F570CB",
++            "EB1FFD4F2F49137B4AEDDBED435513D42685C8ED9E97DF644C693FD7859CC62D",
+@@ -90 +90 @@ fn bundled_skin_pack_theme_files_remain_byte_exact() {
+-            "CB07ADE8952BC809497F78F2E73CC886F43F57E4866FC265B7D4E788D63AEE74",
++            "C312329AABEE84B9A8443B08D4DB64863EC49DEEA3C7F7C942B57E4391B87B59",
+@@ -94 +94 @@ fn bundled_skin_pack_theme_files_remain_byte_exact() {
+-            "6ED25E22A5D9229AD7C7DED3B71EC818D70B0DAE45A650401B8F902F8FA367B9",
++            "EAFB018494225ABABD83AE0E7B940E3F565232CF8F30C53AAFA63E7652178810",
+@@ -98 +98 @@ fn bundled_skin_pack_theme_files_remain_byte_exact() {
+-            "F4D30003D0F2346C49CECD6398072DB1FEA78ADB8335844DA6ADABE0DDEBA417",
++            "2A57716D0161F7405D713912BCD0CD329038657518537F3EFDB5F7EE53DBAE3D",

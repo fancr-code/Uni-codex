@@ -1,0 +1,48 @@
+Codex macOS 安装器
+=================
+
+首次打开与安全边界
+------------------
+当前 DMG 使用 ad-hoc 本地签名，尚未经过 Apple Developer ID 公证。若 macOS 显示“无法验证开发者”，
+请先确认 DMG 来自可信发布者并核对发布页 SHA-256；匹配后在 Finder 中找到应用，
+按住 Control 键点按（或右键打开），选择“打开”，再确认“打开”。
+不要关闭 Gatekeeper 或其他系统安全机制，也不要运行来源不明的终端命令。
+企业或学校的受管设备可能受策略限制，此时请联系管理员。
+
+默认纯 API
+----------
+支持 DeepSeek、Kimi 开放平台、Kimi Code、智谱 GLM、阿里千问、Xiaomi MiMo。
+官方 API Key 入口：
+- DeepSeek：https://platform.deepseek.com/api_keys
+- Kimi 开放平台：https://platform.moonshot.cn/console/api-keys
+- Kimi Code：https://www.kimi.com/code/console
+- 智谱 GLM：https://bigmodel.cn/usercenter/apikeys
+- 阿里千问：https://bailian.console.aliyun.com/cn-beijing?tab=model
+- Xiaomi MiMo：https://platform.xiaomimimo.com/
+
+安装器优先从所选服务商刷新上游模型，失败时使用离线快照；Kimi 开放平台快照包含 Kimi K3。
+实际模型调用、模型刷新与账号授权需要网络，并由所选服务商处理和计费。
+
+OpenAI 账号是可选增强
+---------------------
+推荐“OpenAI 账号 + 所选国产 API”，可在安装器内点击“获取 OpenAI 授权”。
+授权不等于 GPT API Key，不提供 GPT API 额度，也不增加账号未拥有的权限；模型仍由所选服务商调用。
+
+安装与安全
+----------
+- 健康 Codex 直接复用，不重复安装或降级。
+- Codex++ 包含 cross-provider-content-v1。
+- 配置 3 个插件市场、9 个插件和完整脚本市场。
+- 默认启用 Context Used Meter 与 Codex Token Usage。
+- API Key、OAuth Token、设备码、对话正文、日志与安装报告均排除敏感内容或脱敏。
+- 已有正确修订的 Codex++ 启动器和管理工具会成对复用；旧版、未修补版或两者不一致时成对升级。
+- 跨供应商旧会话只在本机转换，兼容日志不记录消息正文。
+- 取消或失败时事务自动回滚，可重新运行安装器恢复最近备份。
+- Context Used Meter 位于会话页左上角浮窗，Codex Token Usage 位于最新助手消息操作区；
+  可在 Codex++ 的 Scripts/脚本市场关闭对应名称的开关。
+
+Uni-Scholar 生态优势
+--------------------
+Uni-Scholar 云端工作站：https://uni-scholar.asia
+Research Kit 本地中枢：https://uni-scholar.asia/research-kit
+Research Kit 连接 Zotero、Obsidian 与本地知识库，Codex/Codex++ 是执行层；三层形成连续科研工作流。

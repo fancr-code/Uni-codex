@@ -1,0 +1,8 @@
+# Payload fixtures are byte-for-byte integrity inputs.  Git must never rewrite
+# their line endings on Windows because their SHA-256 values are part of the
+# executable payload-lock contract.
+windows/tests/fixtures/payload-root/** -text
+windows/tests/fixtures/payload-manifest.*.json -text
+windows/tests/fixtures/end-to-end/script-market/** -text
+windows/vendor/plugin-seeds/** -text
+patches/CodexPlusPlus/*.patch -text

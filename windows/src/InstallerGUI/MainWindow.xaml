@@ -1,0 +1,343 @@
+<Window x:Class="CodexOneClickInstaller.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        Title="{DynamicResource WindowTitle}"
+        Width="860"
+        Height="700"
+        MinWidth="800"
+        MinHeight="640"
+        WindowStartupLocation="CenterScreen"
+        Icon="/CodexOneClickInstaller;component/Resources/icons/AppIcon.ico"
+        Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
+        Foreground="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background"
+                    Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+        <Style x:Key="SectionHeadingStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+        <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,12,0"/>
+        </Style>
+        <Style x:Key="FieldControlStyle" TargetType="Control">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+        <Style x:Key="AuxiliaryButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Margin" Value="8,0,0,0"/>
+        </Style>
+        <Style x:Key="PrimaryButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource AuxiliaryButtonStyle}">
+            <Setter Property="Background"
+                    Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+            <Setter Property="Foreground"
+                    Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="MinWidth" Value="160"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,14">
+            <TextBlock Text="{DynamicResource WindowTitle}"
+                       FontSize="24"
+                       FontWeight="Bold"/>
+            <TextBlock Text="{DynamicResource WindowSubtitle}"
+                       Margin="0,4,0,0"
+                       Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Focusable="False">
+            <StackPanel>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource ConfigurationHeading}"
+                                   Style="{StaticResource SectionHeadingStyle}"/>
+
+                        <Grid x:Name="ProviderRow" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="180"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="{DynamicResource ProviderLabel}"
+                                       Style="{StaticResource FieldLabelStyle}"/>
+                            <ComboBox x:Name="ProviderComboBox"
+                                      Grid.Column="1"
+                                      ItemsSource="{Binding Providers}"
+                                      SelectedItem="{Binding SelectedProvider}"
+                                      DisplayMemberPath="DisplayName"
+                                      Style="{StaticResource FieldControlStyle}"
+                                      TabIndex="0"/>
+                            <TextBlock Grid.Column="2"
+                                       Margin="12,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Text="离线模型已内置"
+                                       Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                        </Grid>
+
+                        <Grid x:Name="AuthenticationRow" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="180"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="{DynamicResource AuthenticationLabel}"
+                                       Style="{StaticResource FieldLabelStyle}"/>
+                            <ComboBox x:Name="AuthenticationModeComboBox"
+                                      Grid.Column="1"
+                                      ItemsSource="{Binding AuthenticationModes}"
+                                      SelectedItem="{Binding SelectedAuthentication}"
+                                      DisplayMemberPath="DisplayName"
+                                      Style="{StaticResource FieldControlStyle}"
+                                      TabIndex="1"/>
+                            <Button x:Name="AuthorizeOpenAIButton"
+                                    Grid.Column="2"
+                                    Content="{Binding OpenAIButtonText}"
+                                    Command="{Binding AuthorizeOpenAICommand}"
+                                    Visibility="{Binding ShowAuthorizationRecommendation,
+                                      Converter={StaticResource BooleanToVisibilityConverter}}"
+                                    Style="{StaticResource AuxiliaryButtonStyle}"
+                                    TabIndex="2"/>
+                        </Grid>
+
+                        <Grid x:Name="AuthorizationRecommendationRow"
+                              Margin="0,0,0,10"
+                              Visibility="{Binding ShowAuthorizationRecommendation,
+                                Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="180"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="1"
+                                    Grid.ColumnSpan="2"
+                                    Padding="10,8"
+                                    Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}"
+                                    BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                                    BorderThickness="1">
+                                <TextBlock Text="{DynamicResource OpenAIRecommendation}"
+                                           TextWrapping="Wrap"
+                                           Foreground="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}"/>
+                            </Border>
+                        </Grid>
+
+                        <Grid x:Name="ApiKeyRow" Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="180"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="{DynamicResource ApiKeyLabel}"
+                                       Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBox x:Name="ApiKeyTextBox"
+                                     Grid.Column="1"
+                                     Text="{Binding ApiKey, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FieldControlStyle}"
+                                     AutomationProperties.HelpText="{DynamicResource ApiKeyHint}"
+                                     TabIndex="3"/>
+                            <Button Grid.Column="2"
+                                    Content="{Binding ApiKeyButtonText}"
+                                    Command="{Binding OpenApiKeyPageCommand}"
+                                    Style="{StaticResource AuxiliaryButtonStyle}"
+                                    TabIndex="4"/>
+                        </Grid>
+
+                        <Grid x:Name="ApiKeyHintRow" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="180"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="1"
+                                       Grid.ColumnSpan="2"
+                                       Text="{DynamicResource ApiKeyHint}"
+                                       TextWrapping="Wrap"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                        </Grid>
+
+                        <Grid x:Name="ModelRow">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="180"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="{DynamicResource ModelLabel}"
+                                       Style="{StaticResource FieldLabelStyle}"/>
+                            <ComboBox x:Name="ModelComboBox"
+                                      Grid.Column="1"
+                                      ItemsSource="{Binding Models}"
+                                      SelectedItem="{Binding SelectedModel}"
+                                      DisplayMemberPath="DisplayName"
+                                      Style="{StaticResource FieldControlStyle}"
+                                      TabIndex="5"/>
+                            <Button Grid.Column="2"
+                                    Content="{DynamicResource RefreshModels}"
+                                    Command="{Binding RefreshModelsCommand}"
+                                    Style="{StaticResource AuxiliaryButtonStyle}"
+                                    TabIndex="6"/>
+                        </Grid>
+
+                        <Grid x:Name="ModelSourceRow" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="180"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="1"
+                                       Grid.ColumnSpan="2"
+                                       Text="{Binding ModelSourceText}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource LogHeading}"
+                                   Style="{StaticResource SectionHeadingStyle}"/>
+                        <TextBlock Text="{Binding StatusText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,8"
+                                   AutomationProperties.LiveSetting="Polite"/>
+                        <ListBox ItemsSource="{Binding LogLines}"
+                                 Height="92"
+                                 IsTabStop="False"
+                                 FontFamily="Consolas"
+                                 FontSize="11"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}"
+                        Visibility="{Binding IsCompletionVisible,
+                          Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource ResultHeading}"
+                                   Style="{StaticResource SectionHeadingStyle}"/>
+                        <Grid Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="120"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="{DynamicResource ComponentColumn}"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock Grid.Column="1"
+                                       Text="{DynamicResource StatusColumn}"
+                                       FontWeight="SemiBold"/>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding CompletionItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="120"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Name}"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Status}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="{DynamicResource ReportButton}"
+                                Command="{Binding OpenReportCommand}"
+                                Style="{StaticResource AuxiliaryButtonStyle}"
+                                HorizontalAlignment="Left"
+                                Margin="0,10,0,0"
+                                TabIndex="10"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Grid.Row="2" Margin="0,14,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <ProgressBar Grid.Column="0"
+                             Height="8"
+                             Minimum="0"
+                             Maximum="1"
+                             Value="{Binding Progress, Mode=OneWay}"
+                             IsIndeterminate="{Binding IsProgressIndeterminate}"
+                             VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1"
+                           Text="{Binding ProgressText}"
+                           Margin="12,0,0,0"
+                           VerticalAlignment="Center"
+                           AutomationProperties.LiveSetting="Polite"/>
+            </Grid>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0"
+                           Text="{DynamicResource ReadyForInstall}"
+                           VerticalAlignment="Center"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                <Button Grid.Column="1"
+                        Content="{DynamicResource RestoreButton}"
+                        Command="{Binding RestoreCommand}"
+                        Style="{StaticResource AuxiliaryButtonStyle}"
+                        TabIndex="7"/>
+                <Button Grid.Column="2"
+                        Content="{DynamicResource InstallButton}"
+                        Command="{Binding InstallCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        TabIndex="8"/>
+                <Button Grid.Column="3"
+                        Content="{DynamicResource CancelButton}"
+                        Command="{Binding CancelCommand}"
+                        Style="{StaticResource AuxiliaryButtonStyle}"
+                        TabIndex="9"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

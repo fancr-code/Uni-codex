@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "scripts": [
+    {"id":"codex-context-used-meter","version":"101","sha256":"2355c76bc467f5ba25f56ead9abf3ee1dc1c8653a6d6d9d0f0846d7b89b65798","local_path":"scripts/codex-context-used-meter.js","script_url":"https://raw.githubusercontent.com/example/market/fixture-commit/scripts/codex-context-used-meter.js","source_commit":"fixture-commit"},
+    {"id":"codex-token-usage","version":"0.1.7","sha256":"15f97d3ecd87886cf9c6c47dd0e6040ac422a0c659d3e32ea169932f79377467","local_path":"scripts/codex-token-usage.js","script_url":"https://raw.githubusercontent.com/example/market/fixture-commit/scripts/codex-token-usage.js","source_commit":"fixture-commit"},
+    {"id":"codex-daily-token-usage","version":"1.4.13","sha256":"e5060f06cd96022c315892e54e96958d7dc7753bcf857f23d734b8b474cb7c59","local_path":"scripts/codex-daily-token-usage.js","script_url":"https://raw.githubusercontent.com/example/market/fixture-commit/scripts/codex-daily-token-usage.js","source_commit":"fixture-commit"},
+    {"id":"codex-live-token-cost","version":"0.7.2","sha256":"bd433af9ba95637e0a6babb7728e50d50d3ef44763a3e7d1ec47e4d9c25ece82","local_path":"scripts/codex-live-token-cost.js","script_url":"https://raw.githubusercontent.com/example/market/fixture-commit/scripts/codex-live-token-cost.js","source_commit":"fixture-commit"}
+  ]
+}

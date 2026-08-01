@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "payloadFixture": "../payload-root",
+  "providers": [
+    {
+      "provider": "deepseek",
+      "defaultModel": "deepseek-v4-flash"
+    },
+    {
+      "provider": "kimi-open",
+      "defaultModel": "kimi-k3"
+    }
+  ],
+  "expected": {
+    "marketplaceCount": 3,
+    "pluginCount": 9,
+    "offlineMarketplaceCount": 2,
+    "offlinePluginCount": 5,
+    "runtimePluginCount": 4,
+    "runtimeStatus": "configured",
+    "scriptCount": 5,
+    "translationEnabled": true,
+    "contextMeterEnabled": true,
+    "tokenUsageEnabled": true,
+    "dailyUsageEnabled": false,
+    "liveCostEnabled": false
+  }
+}

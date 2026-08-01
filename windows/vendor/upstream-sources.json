@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 2,
+  "codexStoreProductId": "9PLM9XGG6VKS",
+  "codexStoreListingURL": "https://apps.microsoft.com/detail/9PLM9XGG6VKS",
+  "codexPlusPlusTag": "v1.2.43",
+  "codexPlusPlusSource": "https://github.com/BigPizzaV3/CodexPlusPlus/archive/refs/tags/v1.2.43.tar.gz",
+  "scriptMarketCommit": "b3c1d16d7d75145b9cf5b0e34000316436d905dd",
+  "innoSetupVersion": "7.0.2",
+  "innoSetupSha256": "5ad54ca3def786f8f4212552e54cc6d8d61329e2d24a1cfee0571d42c2684ff1"
+}

@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{ACEC7958-E1CB-44B6-8DD4-718DC90CA72C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodexOneClick.Core", "src\InstallerCore\CodexOneClick.Core.csproj", "{18C9D1F9-B8CA-470D-9A5B-8409248250B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodexOneClickInstaller", "src\InstallerGUI\CodexOneClickInstaller.csproj", "{67EB5620-F108-4A86-B530-9AF459D95C41}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{4C568B27-74C4-46B0-A2B1-EB96B4758548}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodexOneClick.Core.Tests", "tests\CodexOneClick.Core.Tests\CodexOneClick.Core.Tests.csproj", "{3055A137-4092-4791-A63F-1A35D9749BD4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodexOneClick.Gui.Tests", "tests\CodexOneClick.Gui.Tests\CodexOneClick.Gui.Tests.csproj", "{7E2507FB-F622-4F7D-BD1C-511D5C02788E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorePackageResolver", "tools\StorePackageResolver\StorePackageResolver.csproj", "{C8A2B924-9EA8-4B27-8E77-B4BD3164D25B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{18C9D1F9-B8CA-470D-9A5B-8409248250B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18C9D1F9-B8CA-470D-9A5B-8409248250B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18C9D1F9-B8CA-470D-9A5B-8409248250B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18C9D1F9-B8CA-470D-9A5B-8409248250B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67EB5620-F108-4A86-B530-9AF459D95C41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67EB5620-F108-4A86-B530-9AF459D95C41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67EB5620-F108-4A86-B530-9AF459D95C41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67EB5620-F108-4A86-B530-9AF459D95C41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3055A137-4092-4791-A63F-1A35D9749BD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3055A137-4092-4791-A63F-1A35D9749BD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3055A137-4092-4791-A63F-1A35D9749BD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3055A137-4092-4791-A63F-1A35D9749BD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E2507FB-F622-4F7D-BD1C-511D5C02788E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E2507FB-F622-4F7D-BD1C-511D5C02788E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E2507FB-F622-4F7D-BD1C-511D5C02788E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E2507FB-F622-4F7D-BD1C-511D5C02788E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8A2B924-9EA8-4B27-8E77-B4BD3164D25B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8A2B924-9EA8-4B27-8E77-B4BD3164D25B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8A2B924-9EA8-4B27-8E77-B4BD3164D25B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8A2B924-9EA8-4B27-8E77-B4BD3164D25B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{18C9D1F9-B8CA-470D-9A5B-8409248250B5} = {ACEC7958-E1CB-44B6-8DD4-718DC90CA72C}
+		{67EB5620-F108-4A86-B530-9AF459D95C41} = {ACEC7958-E1CB-44B6-8DD4-718DC90CA72C}
+		{3055A137-4092-4791-A63F-1A35D9749BD4} = {4C568B27-74C4-46B0-A2B1-EB96B4758548}
+		{7E2507FB-F622-4F7D-BD1C-511D5C02788E} = {4C568B27-74C4-46B0-A2B1-EB96B4758548}
+	EndGlobalSection
+EndGlobal

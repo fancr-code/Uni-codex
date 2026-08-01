@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 2,
+  "plugins": [
+    {"marketplace":"openai-bundled","id":"browser","delivery":"offline"},
+    {"marketplace":"openai-bundled","id":"chrome","delivery":"offline"},
+    {"marketplace":"openai-bundled","id":"computer-use","delivery":"offline"},
+    {"marketplace":"openai-bundled","id":"latex","delivery":"offline"},
+    {"marketplace":"openai-primary-runtime","id":"pdf","delivery":"runtime","runtimeId":"codex-primary-runtime"},
+    {"marketplace":"openai-primary-runtime","id":"documents","delivery":"runtime","runtimeId":"codex-primary-runtime"},
+    {"marketplace":"openai-primary-runtime","id":"spreadsheets","delivery":"runtime","runtimeId":"codex-primary-runtime"},
+    {"marketplace":"openai-primary-runtime","id":"presentations","delivery":"runtime","runtimeId":"codex-primary-runtime"},
+    {"marketplace":"openai-curated","id":"github","delivery":"offline"}
+  ]
+}

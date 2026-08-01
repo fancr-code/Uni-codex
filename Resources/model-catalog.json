@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-22T00:00:00Z",
+  "providers": [
+    {
+      "kind": "deepseek",
+      "protocolName": "chatCompletions",
+      "models": [
+        {
+          "id": "deepseek-v4-flash",
+          "displayName": "DeepSeek V4 Flash",
+          "contextWindow": 1000000
+        },
+        {
+          "id": "deepseek-v4-pro",
+          "displayName": "DeepSeek V4 Pro",
+          "contextWindow": 1000000
+        }
+      ]
+    },
+    {
+      "kind": "kimi-open",
+      "protocolName": "chatCompletions",
+      "models": [
+        {
+          "id": "kimi-k2.6",
+          "displayName": "Kimi K2.6",
+          "contextWindow": 262144
+        },
+        {
+          "id": "kimi-k2.7-code",
+          "displayName": "Kimi K2.7 Code",
+          "contextWindow": 262144
+        },
+        {
+          "id": "kimi-k2.7-code-highspeed",
+          "displayName": "Kimi K2.7 Code HighSpeed",
+          "contextWindow": 262144
+        },
+        {
+          "id": "kimi-k3",
+          "displayName": "Kimi K3",
+          "contextWindow": 1000000
+        }
+      ]
+    },
+    {
+      "kind": "kimi-code",
+      "protocolName": "chatCompletions",
+      "models": [
+        {
+          "id": "k3",
+          "displayName": "Kimi K3",
+          "contextWindow": 1048576
+        },
+        {
+          "id": "kimi-for-coding",
+          "displayName": "Kimi K2.7 Code",
+          "contextWindow": 262144
+        },
+        {
+          "id": "kimi-for-coding-highspeed",
+          "displayName": "Kimi K2.7 Code HighSpeed",
+          "contextWindow": 262144
+        }
+      ]
+    },
+    {
+      "kind": "zhipu",
+      "protocolName": "chatCompletions",
+      "models": [
+        {"id": "glm-4-flash-250414", "displayName": "GLM-4-Flash-250414", "contextWindow": null},
+        {"id": "glm-4-flashx-250414", "displayName": "GLM-4-FlashX-250414", "contextWindow": null},
+        {"id": "glm-4.5-air", "displayName": "GLM-4.5-Air", "contextWindow": null},
+        {"id": "glm-4.5-airx", "displayName": "GLM-4.5-AirX", "contextWindow": null},
+        {"id": "glm-4.5-flash", "displayName": "GLM-4.5-Flash", "contextWindow": null},
+        {"id": "glm-4.6", "displayName": "GLM-4.6", "contextWindow": null},
+        {"id": "glm-4.7", "displayName": "GLM-4.7", "contextWindow": null},
+        {"id": "glm-4.7-flash", "displayName": "GLM-4.7-Flash", "contextWindow": null},
+        {"id": "glm-4.7-flashx", "displayName": "GLM-4.7-FlashX", "contextWindow": null},
+        {"id": "glm-5", "displayName": "GLM-5", "contextWindow": null},
+        {"id": "glm-5-turbo", "displayName": "GLM-5-Turbo", "contextWindow": null},
+        {"id": "glm-5.1", "displayName": "GLM-5.1", "contextWindow": null},
+        {"id": "glm-5.2", "displayName": "GLM-5.2", "contextWindow": 1000000}
+      ]
+    },
+    {
+      "kind": "qwen",
+      "protocolName": "chatCompletions",
+      "models": [
+        {"id": "qwen3.7-flash", "displayName": "Qwen3.7-Flash", "contextWindow": 1000000},
+        {"id": "qwen3.7-max", "displayName": "Qwen3.7-Max", "contextWindow": 1000000},
+        {"id": "qwen3.7-plus", "displayName": "Qwen3.7-Plus", "contextWindow": 1000000}
+      ]
+    },
+    {
+      "kind": "xiaomi-mimo",
+      "protocolName": "chatCompletions",
+      "models": [
+        {"id": "mimo-v2.5", "displayName": "MiMo-V2.5", "contextWindow": 1000000},
+        {"id": "mimo-v2.5-pro", "displayName": "MiMo-V2.5-Pro", "contextWindow": 1000000}
+      ]
+    }
+  ]
+}

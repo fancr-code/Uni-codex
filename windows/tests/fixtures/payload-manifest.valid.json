@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 2,
+  "fixture": true,
+  "files": [
+    {
+      "id": "codex-windows-x64",
+      "version": "26.7.27.0",
+      "architecture": "x64",
+      "relativePath": "apps/Codex.msix",
+      "sha256": "d1f00a6bd03f3f9b711bf98cc0d7efc3b8c918eb8e943e4c7d251b67c31645b4",
+      "size": 420,
+      "sourceURL": "https://get.microsoft.com/installer/download/9PLM9XGG6VKS",
+      "format": "msix",
+      "packageFamilyName": "OpenAI.Codex_2p2nqsd0c76g0",
+      "publisher": "CN=50BDFD77-8903-4850-9FFE-6E8522F64D5B"
+    },
+    {
+      "id": "codex-plus-plus-windows-x64",
+      "version": "1.2.43+codexkit.1",
+      "architecture": "x64",
+      "relativePath": "apps/CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe",
+      "sha256": "bbd6b21a57051728dee2799e9573d9bac561bd87b19c4bc7d36b15377ab6dacf",
+      "size": 24,
+      "sourceURL": "https://github.com/BigPizzaV3/CodexPlusPlus/releases/tag/v1.2.43",
+      "format": "exe",
+      "compatibilityRevision": "cross-provider-content-v1",
+      "licenseID": "AGPL-3.0-only",
+      "authenticodePolicy": "unsigned"
+    },
+    {
+      "id": "codex-plus-plus-source",
+      "version": "1.2.43+codexkit.1",
+      "architecture": "source",
+      "relativePath": "sources/CodexPlusPlus-v1.2.43-codexkit.1-source.tar.gz",
+      "sha256": "0a1a0198cfd41ea374b7d5903f454523e3c1ab8e6d3ac6b4a26e3702c0e76d1d",
+      "size": 31,
+      "sourceURL": "https://github.com/BigPizzaV3/CodexPlusPlus/archive/refs/tags/v1.2.43.tar.gz",
+      "format": "archive",
+      "compatibilityRevision": "cross-provider-content-v1",
+      "licenseID": "AGPL-3.0-only"
+    },
+    {
+      "id": "model-catalog",
+      "version": "1",
+      "architecture": "any",
+      "relativePath": "model-catalog.json",
+      "sha256": "83d618a8bc4c5260b3d5745573b54b25e6e2c2955109a1736a14c3132de87a21",
+      "size": 35,
+      "sourceURL": "https://example.invalid/repository/Resources/model-catalog.json",
+      "format": "json"
+    },
+    {
+      "id": "plugin-marketplaces",
+      "version": "fixture-1",
+      "architecture": "any",
+      "relativePath": "plugins",
+      "sha256": "50df9475ad644647734e8c2d27cea9c2a06de6a1ee005388211c727a42f2fc26",
+      "size": 1298,
+      "sourceURL": "https://get.microsoft.com/installer/download/9PLM9XGG6VKS",
+      "format": "directory"
+    },
+    {
+      "id": "script-market",
+      "version": "fixture-commit",
+      "architecture": "any",
+      "relativePath": "script-market",
+      "sha256": "03beffe0081eb818981d81c4e34787f9a72d23f180a9e2b2c24d9a264d76ebd7",
+      "size": 2939,
+      "sourceURL": "https://raw.githubusercontent.com/example/market/fixture-commit/index.json",
+      "format": "directory"
+    }
+  ]
+}

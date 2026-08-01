@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 2,
+  "overrides": [
+    {
+      "mode": "pinned",
+      "id": "codex-zhcn-translate",
+      "upstreamURL": "https://raw.githubusercontent.com/hL091015/CodexPlusPlusScriptMarket/main/scripts/zh_CN%E6%B1%89%E5%8C%96.user.js",
+      "upstreamSHA256": "72214d31d425d1ce936b457aa43fcc40df55f4de3b9b140f9510c7f392cdc845",
+      "pinnedURL": "https://raw.githubusercontent.com/hL091015/CodexPlusPlusScriptMarket/482076e76af9c78f18e3998bd99a96dc6033eb5d/scripts/zh_CN%E6%B1%89%E5%8C%96.user.js",
+      "pinnedSHA256": "be19a7930116dfe8fa1c68571d6a3bb3130714f77c7e32a6c1da543a182270f5",
+      "sourceCommit": "482076e76af9c78f18e3998bd99a96dc6033eb5d"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "id": "codex-zhcn-translate",
+      "name": "Codex 中文翻译",
+      "version": "1.0.0",
+      "homepage": "https://example.invalid/codex-zhcn-translate",
+      "script_url": "https://example.invalid/codex-zhcn-translate.js",
+      "sha256": "41ea256fd4c4a756735ce12287b20add42ad70a4e3c5bca5cf640e2ff0816ad3"
+    },
+    {
+      "id": "codex-context-used-meter",
+      "name": "Codex Context Used Meter",
+      "version": "101",
+      "homepage": "https://example.invalid/codex-context-used-meter",
+      "script_url": "https://example.invalid/codex-context-used-meter.js",
+      "sha256": "5eb0512934130da6512f9b36c17dbf262b13fb0025dcfd7fa9645f902f3840d5"
+    },
+    {
+      "id": "codex-token-usage",
+      "name": "Codex Token Usage",
+      "version": "0.1.7",
+      "homepage": "https://example.invalid/codex-token-usage",
+      "script_url": "https://example.invalid/codex-token-usage.js",
+      "sha256": "68f317dd39ff10fbb838f938b78334f37c89e7eaaf7ef566d536bd5dd5779061"
+    },
+    {
+      "id": "codex-daily-token-usage",
+      "name": "Codex Daily Token Usage",
+      "version": "1.4.13",
+      "homepage": "https://example.invalid/codex-daily-token-usage",
+      "script_url": "https://example.invalid/codex-daily-token-usage.js",
+      "sha256": "b2ecae9484166ae389739eee971c0f98a98ffbdc6aa468d6e187775dc049a1f3"
+    },
+    {
+      "id": "codex-live-token-cost",
+      "name": "Codex Live Token Cost",
+      "version": "0.7.2",
+      "homepage": "https://example.invalid/codex-live-token-cost",
+      "script_url": "https://example.invalid/codex-live-token-cost.js",
+      "sha256": "2cd2f27768ff78769e68c97c9727212150450660b23ca655b7c37bff4460c945"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 2,
+  "requiredComponents": [
+    "codex-windows-x64",
+    "codex-plus-plus-windows-x64",
+    "codex-plus-plus-source",
+    "model-catalog",
+    "plugin-marketplaces",
+    "script-market"
+  ],
+  "components": {
+    "codex-windows-x64": {"relativePath":"apps/Codex.msix","format":"msix"},
+    "codex-plus-plus-windows-x64": {"relativePath":"apps/CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe","format":"exe"},
+    "codex-plus-plus-source": {"relativePath":"sources/CodexPlusPlus-v1.2.43-codexkit.1-source.tar.gz","format":"archive"},
+    "model-catalog": {"relativePath":"model-catalog.json","format":"json"},
+    "plugin-marketplaces": {"relativePath":"plugins","format":"directory"},
+    "script-market": {"relativePath":"script-market","format":"directory"}
+  },
+  "codex": {
+    "architecture": "x64",
+    "packageFamilyName": "OpenAI.Codex_2p2nqsd0c76g0"
+  },
+  "codexPlusPlus": {
+    "payloadVersion": "1.2.43+codexkit.1",
+    "architecture": "x64",
+    "compatibilityRevision": "cross-provider-content-v1",
+    "licenseID": "AGPL-3.0-only"
+  },
+  "plugins": [
+    {"marketplace":"openai-bundled","id":"browser"},
+    {"marketplace":"openai-bundled","id":"chrome"},
+    {"marketplace":"openai-bundled","id":"computer-use"},
+    {"marketplace":"openai-bundled","id":"latex"},
+    {"marketplace":"openai-primary-runtime","id":"pdf"},
+    {"marketplace":"openai-primary-runtime","id":"documents"},
+    {"marketplace":"openai-primary-runtime","id":"spreadsheets"},
+    {"marketplace":"openai-primary-runtime","id":"presentations"},
+    {"marketplace":"openai-curated","id":"github"}
+  ],
+  "monitoringScripts": [
+    {"id":"codex-context-used-meter","version":"101","sha256":"7d1f79dd2f379bf25787ed1fc65778266fd286cd33966692708f985fe3adba7d"},
+    {"id":"codex-token-usage","version":"0.1.7","sha256":"bf233607f8e60f56b3c68d29c15bbd5ed5d7582fc488380f56b8d2f553bb4ddd"},
+    {"id":"codex-daily-token-usage","version":"1.4.13","sha256":"80f5efb88d1e2e0da5c22f229b65d08710460a7c258bdaea7b82a84071fb7576"},
+    {"id":"codex-live-token-cost","version":"0.7.2","sha256":"aee6bf61236aa9edf183a71bba5a45cbb1f273f94e2197d4421d557999de5da8"}
+  ],
+  "scriptMarket": {
+    "commit": "b3c1d16d7d75145b9cf5b0e34000316436d905dd",
+    "indexSha256": "0776ecee1165babd3794fa3a740433b5326549bc8c5d8546aa4f8bb52374d540"
+  }
+}

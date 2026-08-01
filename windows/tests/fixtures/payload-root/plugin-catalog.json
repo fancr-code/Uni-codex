@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "plugins": [
+    {"marketplace":"openai-bundled","id":"browser"},
+    {"marketplace":"openai-bundled","id":"chrome"},
+    {"marketplace":"openai-bundled","id":"computer-use"},
+    {"marketplace":"openai-bundled","id":"latex"},
+    {"marketplace":"openai-primary-runtime","id":"pdf"},
+    {"marketplace":"openai-primary-runtime","id":"documents"},
+    {"marketplace":"openai-primary-runtime","id":"spreadsheets"},
+    {"marketplace":"openai-primary-runtime","id":"presentations"},
+    {"marketplace":"openai-curated","id":"github"}
+  ]
+}

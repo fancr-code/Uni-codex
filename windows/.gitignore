@@ -1,0 +1,47 @@
+# Build outputs
+build/
+dist/
+dist-test/
+*.exe
+*.dll
+*.pdb
+*.msix
+
+# NuGet packages
+packages/
+*.nupkg
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# PowerShell
+*.ps1xml
+*.psd1
+
+# Temporary
+*.tmp
+*.log
+*.zip
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS cruft
+.DS_Store
+__MACOSX/
+
+# Payloads (too large, fetched separately)
+vendor/offline-payloads/apps/*.exe
+vendor/offline-payloads/apps/*.Msix
+vendor/offline-payloads/apps/*.msix
+vendor/offline-payloads/apps/*.dmg
+vendor/offline-payloads/sources/*.tar.gz
+vendor/offline-payloads/script-market/index.json

@@ -1,0 +1,24 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <sys:String x:Key="WindowTitle">Codex Windows 一键安装器</sys:String>
+    <sys:String x:Key="WindowSubtitle">Windows 10/11 x64 · 全离线安装</sys:String>
+    <sys:String x:Key="ConfigurationHeading">配置</sys:String>
+    <sys:String x:Key="ProviderLabel">API 服务商</sys:String>
+    <sys:String x:Key="AuthenticationLabel">认证模式</sys:String>
+    <sys:String x:Key="ApiKeyLabel">API Key</sys:String>
+    <sys:String x:Key="ApiKeyHint">输入仅用于本机配置，日志中会自动隐藏。</sys:String>
+    <sys:String x:Key="ModelLabel">默认模型</sys:String>
+    <sys:String x:Key="RefreshModels">刷新模型</sys:String>
+    <sys:String x:Key="OpenAIRecommendation">默认使用所选国产模型 API。有 OpenAI 账号？推荐同时授权；模型仍使用当前 API 运行，并解锁全部官方插件入口与最佳兼容性。</sys:String>
+    <sys:String x:Key="ResultHeading">安装结果</sys:String>
+    <sys:String x:Key="ComponentColumn">组件</sys:String>
+    <sys:String x:Key="StatusColumn">状态</sys:String>
+    <sys:String x:Key="LogHeading">安装日志</sys:String>
+    <sys:String x:Key="ReportButton">打开安装报告</sys:String>
+    <sys:String x:Key="RestoreButton">恢复最近备份</sys:String>
+    <sys:String x:Key="InstallButton">开始安装</sys:String>
+    <sys:String x:Key="CancelButton">取消当前操作</sys:String>
+    <sys:String x:Key="ReadyForInstall">选择 API Key 后即可开始；安装、刷新、授权和恢复一次只运行一项。</sys:String>
+</ResourceDictionary>

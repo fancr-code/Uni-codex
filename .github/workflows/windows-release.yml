@@ -1,0 +1,239 @@
+name: windows-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Windows release tag"
+        required: true
+        default: "v1.0.0-windows"
+      redistribution_authorized:
+        description: "Written authorization permits redistributing the official Codex desktop package"
+        required: true
+        type: choice
+        default: "no"
+        options:
+          - "no"
+          - "yes"
+
+permissions: {}
+
+concurrency:
+  group: windows-release-${{ inputs.release_tag }}
+  cancel-in-progress: false
+
+jobs:
+  compliance:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Verify redistribution authorization
+        env:
+          REQUESTED_AUTHORIZATION: ${{ inputs.redistribution_authorized }}
+          REPOSITORY_AUTHORIZATION: ${{ vars.CODEX_REDISTRIBUTION_AUTHORIZED }}
+        run: |
+          if [[ "$REQUESTED_AUTHORIZATION" != "yes" || "$REPOSITORY_AUTHORIZATION" != "true" ]]; then
+            echo "Official Codex desktop redistribution is not authorized for public releases." >&2
+            exit 1
+          fi
+
+  release:
+    needs: compliance
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Bind release to triggering commit and final main
+        shell: pwsh
+        run: |
+          git fetch origin main --tags --force
+          $head = git rev-parse HEAD
+          $main = git rev-parse origin/main
+          if ($head -cne $main -or $head -cne $env:GITHUB_SHA) {
+            throw "Release must run from the triggering commit at final origin/main"
+          }
+          if ("${{ inputs.release_tag }}" -notmatch '^v[0-9][0-9A-Za-z._-]*$') {
+            throw "Unsafe release_tag"
+          }
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "8.0.x"
+          cache: true
+          cache-dependency-path: windows/**/packages.lock.json
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: tests/script-runtime/package-lock.json
+      - name: Install Rust stable and locked Node runtime
+        shell: pwsh
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          npm ci --prefix tests/script-runtime
+          npx --prefix tests/script-runtime playwright install chromium
+      - name: Locked restore
+        shell: pwsh
+        run: dotnet restore windows/CodexOneClickInstaller.sln --locked-mode
+      - name: Microsoft Store delivery contract
+        shell: pwsh
+        run: windows/tests/StoreDelivery.Tests.ps1 -ResolveLive
+      - name: Install verified NSIS 3.12
+        shell: pwsh
+        run: |
+          $url = "https://downloads.sourceforge.net/project/nsis/NSIS%203/3.12/nsis-3.12-setup.exe"
+          $expected = "3bc2b06253a7e4957111be152ac6a536e0c7478a706e19da814038db5d706495"
+          $installer = Join-Path $env:RUNNER_TEMP "nsis-3.12-setup.exe"
+          $root = Join-Path $env:RUNNER_TEMP "nsis-3.12"
+          if ($root.Contains(' ')) { throw "NSIS installation path must not contain spaces: $root" }
+          & curl.exe --location --fail --retry 3 --output $installer $url
+          if ($LASTEXITCODE -ne 0) { throw "NSIS download failed with exit code $LASTEXITCODE" }
+          $actual = (Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -cne $expected) { throw "NSIS installer SHA256 mismatch: $actual" }
+          $process = Start-Process -FilePath $installer -Wait -PassThru `
+            -ArgumentList @("/S", "/D=$root")
+          if ($process.ExitCode -ne 0) { throw "NSIS install failed: $($process.ExitCode)" }
+          $makensis = Join-Path $root "makensis.exe"
+          if (-not (Test-Path -LiteralPath $makensis -PathType Leaf)) { throw "makensis.exe missing" }
+          $version = @(& $makensis /VERSION)
+          if ($LASTEXITCODE -ne 0 -or @($version | Where-Object {
+                [string] $_ -ceq 'v3.12'
+              }).Count -ne 1) { throw "NSIS makensis.exe must report exact version v3.12" }
+          $root >> $env:GITHUB_PATH
+      - name: Install verified Inno Setup 7.0.2
+        id: inno
+        shell: pwsh
+        run: |
+          $url = "https://github.com/jrsoftware/issrc/releases/download/is-7_0_2/innosetup-7.0.2-x64.exe"
+          $expected = "5ad54ca3def786f8f4212552e54cc6d8d61329e2d24a1cfee0571d42c2684ff1"
+          $installer = Join-Path $env:RUNNER_TEMP "innosetup-7.0.2-x64.exe"
+          $root = Join-Path $env:RUNNER_TEMP "inno-7.0.2"
+          Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $installer
+          $actual = (Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -cne $expected) { throw "Inno installer SHA256 mismatch" }
+          $process = Start-Process -FilePath $installer -Wait -PassThru `
+            -ArgumentList @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/DIR=$root")
+          if ($process.ExitCode -ne 0) { throw "Inno install failed: $($process.ExitCode)" }
+          $iscc = Join-Path $root "ISCC.exe"
+          if (-not (Test-Path -LiteralPath $iscc -PathType Leaf)) { throw "ISCC.exe missing" }
+          "iscc=$iscc" >> $env:GITHUB_OUTPUT
+      - name: Build Codex++ compatibility payload
+        shell: pwsh
+        run: |
+          windows/scripts/build-codex-plus-compatibility-payload.ps1 `
+            -Tag v1.2.43 `
+            -Patch patches/CodexPlusPlus/v1.2.43-cross-provider-history.patch `
+            -OutputRoot windows/build/codex-plus-compat
+      - name: Refresh complete official offline payload
+        shell: pwsh
+        run: |
+          windows/scripts/refresh-offline-payloads.ps1 `
+            -OutputRoot windows/vendor/offline-payloads `
+            -CodexPlusPlusSetup windows/build/codex-plus-compat/CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe `
+            -CodexPlusPlusSource windows/build/codex-plus-compat/CodexPlusPlus-v1.2.43-codexkit.1-source.tar.gz
+      - name: Strict payload signatures and licenses
+        id: payload
+        shell: pwsh
+        run: |
+          windows/scripts/validate-offline-payloads.ps1 `
+            -PayloadRoot windows/vendor/offline-payloads -StrictSignatures
+          . windows/scripts/offline-payload-supply.ps1
+          $active = Resolve-ActivePayloadRoot (
+            [IO.Path]::GetFullPath("windows/vendor/offline-payloads"))
+          "active=$active" >> $env:GITHUB_OUTPUT
+      - name: Run the unique full Windows test entry once
+        shell: pwsh
+        run: |
+          windows/tests/run-all-tests.ps1 `
+            -PayloadRoot "${{ steps.payload.outputs.active }}" `
+            -BuiltRoot windows/build/codex-plus-compat `
+            -TestResultsRoot windows/test-results/full
+      - name: Build formal unsigned offline EXE
+        shell: pwsh
+        run: |
+          windows/scripts/build-installer.ps1 `
+            -PayloadRoot "${{ steps.payload.outputs.active }}" `
+            -OutputDir dist `
+            -IsccPath "${{ steps.inno.outputs.iscc }}"
+      - name: Verify final unsigned release artifact
+        shell: pwsh
+        run: |
+          windows/tests/verify-release-artifact.ps1 `
+            -DistRoot windows/dist -ExpectUnsigned
+      - name: Isolated InstallerEngine and candidate smoke
+        shell: pwsh
+        run: |
+          windows/tests/run-install-smoke.ps1 `
+            -CandidateExe windows/dist/Codex-One-Click-Windows-x64-Offline-Setup.exe `
+            -PayloadRoot "${{ steps.payload.outputs.active }}" `
+            -TestResultsRoot windows/test-results/install-smoke
+      - name: Copy release test evidence into dist
+        shell: pwsh
+        run: |
+          $evidence = @(
+            @{ Name = 'windows-tests.trx'; Root = 'windows/test-results/full/dotnet' },
+            @{ Name = 'monitor-smoke.json'; Root = 'windows/test-results/full' }
+          )
+          foreach ($item in $evidence) {
+            $matches = @(
+              Get-ChildItem -LiteralPath $item.Root -Filter $item.Name -File
+            )
+            if ($matches.Count -ne 1) {
+              throw "Expected exactly one release evidence file '$($item.Name)', found $($matches.Count)"
+            }
+            $destination = Join-Path 'windows/dist' $item.Name
+            if (Test-Path -LiteralPath $destination) {
+              throw "Release evidence destination already exists: $destination"
+            }
+            Copy-Item -LiteralPath $matches[0].FullName -Destination $destination
+          }
+      - name: Upload verified release evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: Codex-One-Click-Windows-x64-Offline-${{ inputs.release_tag }}
+          if-no-files-found: error
+          path: |
+            windows/dist/**
+      - name: Reconfirm final main immediately before release
+        shell: pwsh
+        run: |
+          git fetch origin main --force
+          $head = git rev-parse HEAD
+          $main = git rev-parse origin/main
+          if ($head -cne $main -or $head -cne $env:GITHUB_SHA) {
+            throw "Release commit is no longer final origin/main"
+          }
+      - name: Create or cautiously update GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ inputs.release_tag }}"
+          $head = git rev-parse HEAD
+          $assets = @(
+            Get-ChildItem -LiteralPath windows/dist -File |
+              ForEach-Object FullName
+          )
+          if ($assets.Count -eq 0) { throw "No release assets found" }
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) {
+            git fetch origin "refs/tags/$tag`:refs/tags/$tag" --force
+            $tagCommit = git rev-list -n 1 $tag
+            if ($tagCommit -cne $head) {
+              throw "Existing release tag points to $tagCommit, not triggering commit $head"
+            }
+            gh release upload $tag @assets `
+              --repo $env:GITHUB_REPOSITORY --clobber
+          } else {
+            gh release create $tag @assets `
+              --repo $env:GITHUB_REPOSITORY `
+              --target $head `
+              --title "Codex Windows $tag" `
+              --notes-file windows/dist/RELEASE-REPORT.zh-CN.md
+          }

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Codex Windows 新手指南</title>
+  <style>
+    body{font-family:"Segoe UI","Microsoft YaHei",sans-serif;max-width:900px;margin:40px auto;padding:0 24px;line-height:1.75;color:#172033}
+    h1,h2{color:#0b5cab}.notice{border-left:5px solid #0b5cab;background:#eef6ff;padding:12px 16px}.warn{border-left-color:#c2410c;background:#fff7ed}
+    code{background:#eef2f7;padding:2px 5px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccd5e0;padding:8px;text-align:left}
+  </style>
+</head>
+<body>
+  <h1>Codex Windows 离线安装器：新手指南</h1>
+  <div class="notice">
+    <strong>公开源码状态：</strong>当前不公开镜像官方 Codex 桌面 MSIX。
+    请先从 <a href="https://apps.microsoft.com/detail/9PLM9XGG6VKS">Microsoft Store 官方页面</a>
+    安装 Codex，再使用 Uni-codex。最低要求为 Windows 10 1809（Build 17763）x64。
+  </div>
+
+  <h2>1. 下载、校验、运行</h2>
+  <ol>
+    <li>不要使用旧 PowerShell 一键脚本、ZIP 正式包或第三方镜像。</li>
+    <li>用 <code>Get-FileHash .\Codex-One-Click-Windows-x64-Offline-Setup.exe -Algorithm SHA256</code> 计算哈希。</li>
+    <li>与 <code>SHA256SUMS.txt</code> 逐字核对；不一致就删除文件并停止。</li>
+    <li>双击 EXE，按界面选择服务商、模型和认证方式。</li>
+  </ol>
+  <div class="notice warn">
+    当前 EXE 为 unsigned，SmartScreen 可能警告。SHA-256 一致只说明文件与该 Release 一致，
+    不能替代发布者签名；来源或哈希不可确认时不要运行。
+    只有文件名和 SHA-256 都匹配时，才可在 SmartScreen 中选择“更多信息”→“仍要运行”；
+    任一项不匹配就点击取消。
+  </div>
+
+  <h2>2. 默认纯 API 与六类服务商</h2>
+  <p>无需 OpenAI 账号即可使用。安装器内的“申请 API Key”打开官方页面：</p>
+  <table>
+    <tr><th>服务商</th><th>官方入口</th></tr>
+    <tr><td>DeepSeek</td><td><a href="https://platform.deepseek.com/api_keys">platform.deepseek.com/api_keys</a></td></tr>
+    <tr><td>Kimi 开放平台</td><td><a href="https://platform.moonshot.cn/console/api-keys">platform.moonshot.cn/console/api-keys</a></td></tr>
+    <tr><td>Kimi Code</td><td><a href="https://www.kimi.com/code/console">kimi.com/code/console</a></td></tr>
+    <tr><td>智谱 GLM</td><td><a href="https://bigmodel.cn/usercenter/apikeys">bigmodel.cn/usercenter/apikeys</a></td></tr>
+    <tr><td>阿里千问</td><td><a href="https://bailian.console.aliyun.com/cn-beijing?tab=model">百炼控制台</a></td></tr>
+    <tr><td>Xiaomi MiMo</td><td><a href="https://platform.xiaomimimo.com/">platform.xiaomimimo.com</a></td></tr>
+  </table>
+  <p>安装器优先从所选服务商的官方模型接口刷新上游模型，失败时使用离线快照；
+     Kimi 开放平台快照包含 Kimi K3。实际模型调用和刷新需要网络。</p>
+
+  <h2>3. 可选 OpenAI 账号授权</h2>
+  <p>推荐“OpenAI 账号 + 所选国产 API”。在安装器内点击“获取 OpenAI 授权”，
+     完成浏览器或设备码流程。授权不等于 GPT API Key，不提供 GPT API 额度，
+     也不会获得账号未拥有的模型、插件或组织权限；模型仍由所选服务商调用和计费。</p>
+
+  <h2>4. 安装器会做什么</h2>
+  <ul>
+    <li>复用健康 Codex，不重复安装、不降级。</li>
+    <li>安装带 <code>cross-provider-content-v1</code> 的 Codex++。</li>
+    <li>预配置 3 个市场、9 个插件；其中 5 个插件离线实装，4 个官方生产力插件在联网且权限满足时由 Codex 运行时供应。</li>
+    <li>启用 Context Used Meter 与 Codex Token Usage。</li>
+    <li>对 API Key、OAuth Token、设备码、日志与安装报告脱敏。</li>
+  </ul>
+  <p>Context Used Meter 显示在会话页左上角的可拖动浮窗；
+     Codex Token Usage 显示在最新助手消息的操作区。要关闭任一项，
+     请在 Codex++ 的 Scripts/脚本市场中关闭对应名称的开关。</p>
+  <p>取消或失败时安装事务会自动回滚。脱敏报告位于
+     <code>%LOCALAPPDATA%\Codex One Click Installer\reports</code>，
+     可从安装器完成页打开。</p>
+
+  <h2>5. Uni-Scholar 生态优势</h2>
+  <p><a href="https://uni-scholar.asia">Uni-Scholar 云端工作站</a>负责云端检索与协作；
+     <a href="https://uni-scholar.asia/research-kit">Research Kit 本地中枢</a>连接
+     Zotero、Obsidian 和本地知识库；Codex/Codex++ 执行层完成代码、文档、数据和自动化，
+     共同形成连续科研工作流。</p>
+  <p><strong>Research Kit 是 macOS 生态链接与可选配套，不随 Windows 安装包预装。</strong></p>
+</body>
+</html>

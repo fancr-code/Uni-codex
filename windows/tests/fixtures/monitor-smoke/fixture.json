@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "fixtureSecret": "fixture-monitor-secret-do-not-report",
+  "conversationId": "monitor-smoke-thread",
+  "usedTokens": 2400,
+  "contextWindow": 12000
+}

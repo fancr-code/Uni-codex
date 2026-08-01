@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApplicationIcon>..\..\Resources\icons\AppIcon.ico</ApplicationIcon>
+    <AssemblyName>CodexOneClickInstaller</AssemblyName>
+    <RootNamespace>CodexOneClickInstaller</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>Codex Kit for Windows</Authors>
+    <Description>Codex Windows One-Click Installer</Description>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>false</PublishSingleFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\InstallerCore\CodexOneClick.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="..\..\Resources\icons\AppIcon.ico">
+      <Link>Resources\icons\AppIcon.ico</Link>
+    </Resource>
+    <Content Include="..\..\..\Resources\model-catalog.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>offline-payloads\model-catalog.json</Link>
+    </Content>
+  </ItemGroup>
+</Project>

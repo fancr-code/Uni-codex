@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10">
+  <Identity Name="OpenAI.Codex"
+            Publisher="CN=50BDFD77-8903-4850-9FFE-6E8522F64D5B"
+            Version="26.7.27.0"
+            ProcessorArchitecture="x64" />
+  <Properties>
+    <DisplayName>Codex fixture</DisplayName>
+    <PublisherDisplayName>OpenAI</PublisherDisplayName>
+    <Logo>logo.png</Logo>
+  </Properties>
+</Package>

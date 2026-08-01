@@ -1,0 +1,146 @@
+name: windows-ci
+
+on:
+  pull_request:
+    paths:
+      - "README.md"
+      - "windows/**"
+      - "Resources/**"
+      - "patches/**"
+      - "tests/script-runtime/**"
+      - ".github/workflows/windows-*.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "8.0.x"
+          cache: true
+          cache-dependency-path: windows/**/packages.lock.json
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: tests/script-runtime/package-lock.json
+      - name: Install Rust stable
+        shell: pwsh
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          npm ci --prefix tests/script-runtime
+          npx --prefix tests/script-runtime playwright install chromium
+      - name: Locked restore
+        shell: pwsh
+        run: dotnet restore windows/CodexOneClickInstaller.sln --locked-mode
+      - name: Microsoft Store delivery contract
+        shell: pwsh
+        run: windows/tests/StoreDelivery.Tests.ps1 -ResolveLive
+      - name: Install verified NSIS 3.12
+        shell: pwsh
+        run: |
+          $url = "https://downloads.sourceforge.net/project/nsis/NSIS%203/3.12/nsis-3.12-setup.exe"
+          $expected = "3bc2b06253a7e4957111be152ac6a536e0c7478a706e19da814038db5d706495"
+          $installer = Join-Path $env:RUNNER_TEMP "nsis-3.12-setup.exe"
+          $root = Join-Path $env:RUNNER_TEMP "nsis-3.12"
+          if ($root.Contains(' ')) { throw "NSIS installation path must not contain spaces: $root" }
+          & curl.exe --location --fail --retry 3 --output $installer $url
+          if ($LASTEXITCODE -ne 0) { throw "NSIS download failed with exit code $LASTEXITCODE" }
+          $actual = (Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -cne $expected) { throw "NSIS installer SHA256 mismatch: $actual" }
+          $process = Start-Process -FilePath $installer -Wait -PassThru `
+            -ArgumentList @("/S", "/D=$root")
+          if ($process.ExitCode -ne 0) { throw "NSIS install failed: $($process.ExitCode)" }
+          $makensis = Join-Path $root "makensis.exe"
+          if (-not (Test-Path -LiteralPath $makensis -PathType Leaf)) { throw "makensis.exe missing" }
+          $version = @(& $makensis /VERSION)
+          if ($LASTEXITCODE -ne 0 -or @($version | Where-Object {
+                [string] $_ -ceq 'v3.12'
+              }).Count -ne 1) { throw "NSIS makensis.exe must report exact version v3.12" }
+          $root >> $env:GITHUB_PATH
+      - name: Core full serialized tests
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path test-results/core -Force | Out-Null
+          dotnet test windows/tests/CodexOneClick.Core.Tests/CodexOneClick.Core.Tests.csproj `
+            -c Release --no-restore `
+            -m:1 -p:TestTfmsInParallel=false `
+            --logger "trx;LogFileName=core-targeted.trx" `
+            --results-directory test-results/core
+      - name: WPF startup, view-model, and layout tests
+        shell: pwsh
+        env:
+          CODEX_LAYOUT_SCREENSHOT_DIR: ${{ github.workspace }}/test-results/layout/screenshots
+        run: |
+          New-Item -ItemType Directory -Path test-results/layout -Force | Out-Null
+          dotnet test windows/tests/CodexOneClick.Gui.Tests/CodexOneClick.Gui.Tests.csproj `
+            -c Release --no-restore `
+            -m:1 -p:TestTfmsInParallel=false `
+            --filter "FullyQualifiedName~StartupContractTests|FullyQualifiedName~ViewModelTests|FullyQualifiedName~LayoutTests|FullyQualifiedName~RuntimeLayoutTests" `
+            --logger "trx;LogFileName=layout-tests.trx" `
+            --results-directory test-results/layout
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+          $screenshots = @(
+            Get-ChildItem -LiteralPath test-results/layout/screenshots `
+              -Filter *.png -File
+          )
+          if ($screenshots.Count -ne 2) {
+            throw "Expected two RenderTargetBitmap layout screenshots"
+          }
+      - name: Workflow contract
+        shell: pwsh
+        run: windows/tests/WorkflowContract.Tests.ps1
+      - name: Documentation contract
+        shell: pwsh
+        run: windows/tests/DocumentationTests.ps1
+      - name: Codex++ patch regression
+        shell: pwsh
+        run: windows/tests/CodexPlusCompatibility.Tests.ps1
+      - name: Install verified Inno Setup 7.0.2
+        id: inno
+        shell: pwsh
+        run: |
+          $url = "https://github.com/jrsoftware/issrc/releases/download/is-7_0_2/innosetup-7.0.2-x64.exe"
+          $expected = "5ad54ca3def786f8f4212552e54cc6d8d61329e2d24a1cfee0571d42c2684ff1"
+          $installer = Join-Path $env:RUNNER_TEMP "innosetup-7.0.2-x64.exe"
+          $root = Join-Path $env:RUNNER_TEMP "inno-7.0.2"
+          Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $installer
+          $actual = (Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -cne $expected) { throw "Inno installer SHA256 mismatch" }
+          $process = Start-Process -FilePath $installer -Wait -PassThru `
+            -ArgumentList @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/DIR=$root")
+          if ($process.ExitCode -ne 0) { throw "Inno install failed: $($process.ExitCode)" }
+          $iscc = Join-Path $root "ISCC.exe"
+          if (-not (Test-Path -LiteralPath $iscc -PathType Leaf)) { throw "ISCC.exe missing" }
+          "iscc=$iscc" >> $env:GITHUB_OUTPUT
+      - name: Fixture real Inno gate
+        shell: pwsh
+        run: |
+          windows/tests/ReleaseArtifact.Tests.ps1 `
+            -RequireRealInno -RealIsccPath "${{ steps.inno.outputs.iscc }}" `
+            -EvidenceOutput test-results/inno
+      - name: Upload Windows test evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-pr-test-evidence
+          if-no-files-found: error
+          path: |
+            test-results/core/*.trx
+            test-results/layout/*.trx
+            test-results/layout/screenshots/*.png
+            test-results/runtime/*.json
+            test-results/inno/**
