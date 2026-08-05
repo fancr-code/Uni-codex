@@ -1,0 +1,109 @@
+name: online-release
+
+on:
+  pull_request:
+    paths:
+      - 'windows/online/**'
+      - 'macos/online/**'
+      - 'tests/online_release_contract_tests.py'
+      - '.github/workflows/online-release.yml'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Release tag
+        required: true
+        default: v1.0.0-online
+  push:
+    tags:
+      - 'v*-online'
+
+permissions:
+  contents: write
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m unittest tests/online_release_contract_tests.py -v
+
+  windows:
+    needs: contract
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Inno Setup 7.0.2
+        id: inno
+        shell: pwsh
+        run: |
+          $url = 'https://github.com/jrsoftware/issrc/releases/download/is-7_0_2/innosetup-7.0.2-x64.exe'
+          $installer = Join-Path $env:RUNNER_TEMP 'inno.exe'
+          Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $installer
+          $expected = '5ad54ca3def786f8f4212552e54cc6d8d61329e2d24a1cfee0571d42c2684ff1'
+          if ((Get-FileHash $installer -Algorithm SHA256).Hash.ToLowerInvariant() -cne $expected) { throw 'Inno SHA mismatch' }
+          $root = Join-Path $env:RUNNER_TEMP 'inno'
+          $p = Start-Process $installer -Wait -PassThru -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/DIR=$root")
+          if ($p.ExitCode -ne 0) { throw "Inno install failed: $($p.ExitCode)" }
+          "iscc=$(Join-Path $root 'ISCC.exe')" >> $env:GITHUB_OUTPUT
+      - name: Download Codex++ Windows installer
+        id: cpp
+        shell: pwsh
+        run: |
+          $release = Invoke-RestMethod -Headers @{'User-Agent'='Uni-codex'} -Uri 'https://api.github.com/repos/BigPizzaV3/CodexPlusPlus/releases/latest'
+          $asset = @($release.assets | Where-Object name -match 'windows-x64-setup\.exe$')
+          if ($asset.Count -ne 1) { throw 'Codex++ Windows asset missing or ambiguous' }
+          $path = Join-Path $env:RUNNER_TEMP $asset[0].name
+          Invoke-WebRequest -UseBasicParsing -Uri $asset[0].browser_download_url -OutFile $path
+          if ([string]$asset[0].digest -match '^sha256:([0-9a-f]{64})$' -and (Get-FileHash $path -Algorithm SHA256).Hash -cne $Matches[1].ToUpperInvariant()) { throw 'Codex++ SHA mismatch' }
+          "path=$path" >> $env:GITHUB_OUTPUT
+      - name: Build Windows online installer
+        shell: pwsh
+        run: |
+          $version = if ('${{ github.event_name }}' -eq 'workflow_dispatch') { '${{ inputs.release_tag }}' } else { '${{ github.ref_name }}' }
+          windows/online/build-online-installer.ps1 -Version $version -CodexPlusPlusSetup '${{ steps.cpp.outputs.path }}' -OutputDirectory dist/windows -IsccPath '${{ steps.inno.outputs.iscc }}'
+      - uses: actions/upload-artifact@v7
+        with:
+          name: online-windows
+          path: dist/windows/*
+          if-no-files-found: error
+
+  macos:
+    needs: contract
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build macOS online DMG
+        run: bash macos/online/build-online-dmg.sh dist/macos
+      - uses: actions/upload-artifact@v7
+        with:
+          name: online-macos
+          path: dist/macos/*
+          if-no-files-found: error
+
+  release:
+    needs: [windows, macos]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: online-*
+          path: dist
+          merge-multiple: true
+      - name: Verify release asset set
+        run: |
+          test -f dist/Uni-codex-Windows-x64-Online-Setup.exe
+          test -f dist/Uni-codex-macOS-Online.dmg
+          test -f dist/SHA256SUMS-Windows.txt
+          test -f dist/SHA256SUMS-macOS.txt
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag='${{ github.ref_name }}'
+          if [[ '${{ github.event_name }}' == workflow_dispatch ]]; then tag='${{ inputs.release_tag }}'; fi
+          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --target '${{ github.sha }}' --title "Uni-codex $tag" --notes '在线精简版：安装时仅从 OpenAI、Microsoft Store 与 Codex++ 官方 GitHub Release 获取组件。'
+          gh release upload "$tag" dist/* --clobber
