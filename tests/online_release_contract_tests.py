@@ -35,6 +35,7 @@ class OnlineReleaseContractTests(unittest.TestCase):
         self.assertIn("macos-latest", workflow)
         self.assertIn("Uni-codex-Windows-x64-Online-Setup.exe", workflow)
         self.assertIn("Uni-codex-macOS-Online.dmg", workflow)
+        self.assertIn("--repo '${{ github.repository }}'", workflow)
         self.assertNotIn("CODEX_REDISTRIBUTION_AUTHORIZED", workflow)
 
 
