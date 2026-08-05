@@ -10,15 +10,17 @@
 
 三层共同构成从知识沉淀、研究推理到执行交付的连续科研工作流。Research Kit 当前为 macOS 生态产品；Windows 用户可把它作为生态链接和可选配套，但它不随 Windows 安装包预装。
 
-## 公开仓库状态
+## 在线精简版 Release
 
-本仓库公开的是 Uni-codex 源码，不公开镜像分发官方 Codex 桌面应用、Microsoft Store
-包或未声明许可证的脚本市场源码。请先从
-[Microsoft Store 官方页面](https://apps.microsoft.com/detail/9PLM9XGG6VKS)
-安装 Codex；Uni-codex 会复用健康的现有安装。
+Release 提供 Windows x64 与 macOS 在线精简安装包。安装包不镜像、不再分发官方 Codex 桌面应用：Windows 安装时通过 Microsoft Store 产品 `9PLM9XGG6VKS` 获取，macOS 安装时从 OpenAI 官方 `persistent.oaistatic.com` 获取。Codex++ 从其 GitHub Release 获取或随 Windows 引导器集成。
 
-包含官方 Codex 桌面安装文件的完整离线 Release，只有在取得书面再分发授权后才会发布。
-最低系统仍为 Windows 10 版本 1809（Build 17763），仅支持 x64。
+- `Uni-codex-Windows-x64-Online-Setup.exe`
+- `Uni-codex-macOS-Online.dmg`
+- 两个平台各自的 `SHA256SUMS` 文件
+
+构建入口为 `.github/workflows/online-release.yml`。推送形如 `v1.0.0-online` 的标签或手动运行工作流即可创建 Release。安装过程需要网络。
+
+本仓库不公开镜像分发官方 Codex 桌面应用、Microsoft Store 包或未声明许可证的脚本市场源码。最低 Windows 系统仍为 Windows 10 版本 1809（Build 17763），仅支持 x64。
 
 完整说明见 [Windows 文档](windows/README.md)。
 
