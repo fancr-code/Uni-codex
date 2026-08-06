@@ -16,7 +16,6 @@ Release 提供 Windows x64 与 macOS 在线精简安装包。安装包不镜像�
 
 - `Uni-codex-Windows-x64-Online-Setup.exe`
 - `Uni-codex-macOS-Online.dmg`
-- 两个平台各自的 `SHA256SUMS` 文件
 
 构建入口为 `.github/workflows/online-release.yml`。推送形如 `v1.0.0-online` 的标签或手动运行工作流即可创建 Release。安装过程需要网络。
 

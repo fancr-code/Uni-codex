@@ -106,4 +106,7 @@ jobs:
           tag='${{ github.ref_name }}'
           if [[ '${{ github.event_name }}' == workflow_dispatch ]]; then tag='${{ inputs.release_tag }}'; fi
           gh release view "$tag" --repo '${{ github.repository }}' >/dev/null 2>&1 || gh release create "$tag" --repo '${{ github.repository }}' --target '${{ github.sha }}' --title "Uni-codex $tag" --notes '在线精简版：安装时仅从 OpenAI、Microsoft Store 与 Codex++ 官方 GitHub Release 获取组件。'
-          gh release upload "$tag" dist/* --repo '${{ github.repository }}' --clobber
+          gh release upload "$tag" \
+            dist/Uni-codex-Windows-x64-Online-Setup.exe \
+            dist/Uni-codex-macOS-Online.dmg \
+            --repo '${{ github.repository }}' --clobber
