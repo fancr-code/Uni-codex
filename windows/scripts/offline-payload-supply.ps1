@@ -5,8 +5,8 @@ function Get-WindowsPayloadPolicy([switch] $FixtureMode) {
     $components = if ($FixtureMode) {
         [ordered]@{
             'codex-windows-x64' = [ordered]@{ relativePath = 'apps/Codex.msix'; format = 'msix' }
-            'codex-plus-plus-windows-x64' = [ordered]@{ relativePath = 'apps/CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe'; format = 'exe' }
-            'codex-plus-plus-source' = [ordered]@{ relativePath = 'sources/CodexPlusPlus-v1.2.43-codexkit.1-source.tar.gz'; format = 'archive' }
+            'codex-plus-plus-windows-x64' = [ordered]@{ relativePath = 'apps/CodexPlusPlus-1.2.44-codexkit.1-windows-x64-setup.exe'; format = 'exe' }
+            'codex-plus-plus-source' = [ordered]@{ relativePath = 'sources/CodexPlusPlus-v1.2.44-codexkit.1-source.tar.gz'; format = 'archive' }
             'model-catalog' = [ordered]@{ relativePath = 'model-catalog.json'; format = 'json' }
             'plugin-marketplaces' = [ordered]@{ relativePath = 'plugins'; format = 'directory' }
             'script-market' = [ordered]@{ relativePath = 'script-market'; format = 'directory' }
@@ -14,8 +14,8 @@ function Get-WindowsPayloadPolicy([switch] $FixtureMode) {
     } else {
         [ordered]@{
             'codex-windows-x64' = [ordered]@{ relativePath = 'apps/Codex.msix'; format = 'msix' }
-            'codex-plus-plus-windows-x64' = [ordered]@{ relativePath = 'apps/CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe'; format = 'exe' }
-            'codex-plus-plus-source' = [ordered]@{ relativePath = 'sources/CodexPlusPlus-v1.2.43-codexkit.1-source.tar.gz'; format = 'archive' }
+            'codex-plus-plus-windows-x64' = [ordered]@{ relativePath = 'apps/CodexPlusPlus-1.2.44-codexkit.1-windows-x64-setup.exe'; format = 'exe' }
+            'codex-plus-plus-source' = [ordered]@{ relativePath = 'sources/CodexPlusPlus-v1.2.44-codexkit.1-source.tar.gz'; format = 'archive' }
             'model-catalog' = [ordered]@{ relativePath = 'model-catalog.json'; format = 'json' }
             'plugin-marketplaces' = [ordered]@{ relativePath = 'plugins'; format = 'directory' }
             'script-market' = [ordered]@{ relativePath = 'script-market'; format = 'directory' }
@@ -43,7 +43,7 @@ function Get-WindowsPayloadPolicy([switch] $FixtureMode) {
             packageFamilyName = 'OpenAI.Codex_2p2nqsd0c76g0'
         }
         CodexPlusPlus = [ordered]@{
-            payloadVersion = '1.2.43+codexkit.1'
+            payloadVersion = '1.2.44+codexkit.1'
             architecture = 'x64'
             compatibilityRevision = 'cross-provider-content-v1'
             licenseID = 'AGPL-3.0-only'

@@ -111,6 +111,13 @@ try {
     "OpenAI Responses usage should render",
   );
   await poll(() => page.locator(".codex-token-usage-badge").isVisible(), true, "token badge should be visible");
+  await poll(
+    async () => /本轮调用合计\s+150(?:\D|$)/.test(
+      (await page.locator(".codex-token-usage-badge").textContent()) || "",
+    ),
+    true,
+    "token badge DOM text should render the OpenAI total of 150",
+  );
   const tokenText = await page.locator(".codex-token-usage-badge").textContent();
   assertFiniteDomNumber(tokenText, "token badge DOM text should contain finite numeric values");
   assert.match(tokenText || "", /本轮调用合计\s+150(?:\D|$)/, "token badge DOM text should render the OpenAI total of 150");

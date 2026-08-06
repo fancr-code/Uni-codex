@@ -18,9 +18,9 @@ CHECKSUMS_FILE="$DIST_ROOT/SHA256SUMS.txt"
 DEVELOPER_ID="${DEVELOPER_ID_APPLICATION:-}"
 ICON_MASTER="$ROOT/Resources/AppIcon/AppIcon-1024.png"
 ICON_FILE="$ROOT/Resources/AppIcon/AppIcon.icns"
-CODEX_PLUS_VERSION='1.2.43'
+CODEX_PLUS_VERSION='1.2.44'
 CODEX_PLUS_COMPATIBILITY_REVISION='cross-provider-content-v1'
-CODEX_PLUS_PATCH="$ROOT/patches/CodexPlusPlus/v1.2.43-cross-provider-history.patch"
+CODEX_PLUS_PATCH="$ROOT/patches/CodexPlusPlus/v1.2.44-cross-provider-history.patch"
 
 die() {
   printf 'build-codex-one-click-installer: %s\n' "$*" >&2
@@ -183,16 +183,22 @@ compile_gui x86_64 x86_64-apple-macos14.0
 /bin/cp -cR "$PAYLOAD_ROOT" "$RESOURCES_DIR/offline-payloads" \
   || die "unable to clone offline payloads into the app bundle"
 /bin/cp "$ROOT/Resources/installer-core.sh" "$RESOURCES_DIR/installer-core.sh"
+/bin/cp "$ROOT/scripts/install-skill-collections.sh" "$RESOURCES_DIR/install-skill-collections.sh"
+/bin/cp "$ROOT/skills/collections.json" "$RESOURCES_DIR/skill-collections.json"
+UNICODEX_SKILL_MANIFEST="$ROOT/skills/collections.json" \
+  UNICODEX_SKILL_DESTINATION="$RESOURCES_DIR/skill-collections" \
+  UNICODEX_SKILL_PREPARE_BUNDLE=1 \
+  "$ROOT/scripts/install-skill-collections.sh"
 /bin/cp "$PAYLOAD_ROOT/model-catalog.json" "$RESOURCES_DIR/model-catalog.json"
 /bin/cp "$ROOT/Resources/plugin-catalog.json" "$RESOURCES_DIR/plugin-catalog.json"
 /bin/mkdir -p "$RESOURCES_DIR/CodexPlusPlus-Compatibility"
 /bin/cp "$CODEX_PLUS_PATCH" \
-  "$RESOURCES_DIR/CodexPlusPlus-Compatibility/v1.2.43-cross-provider-history.patch"
+  "$RESOURCES_DIR/CodexPlusPlus-Compatibility/v1.2.44-cross-provider-history.patch"
 /usr/bin/tar -xOzf "$source_archive" "$codex_plus_provenance_member" \
   > "$RESOURCES_DIR/CodexPlusPlus-Compatibility/CODEXKIT-PATCH.md"
 /usr/bin/ditto "$ROOT/Resources/guides" "$RESOURCES_DIR/guides"
 /usr/bin/ditto "$ROOT/Resources/licenses" "$RESOURCES_DIR/licenses"
-/bin/chmod 755 "$MACOS_DIR/CodexOneClickInstaller" "$RESOURCES_DIR/installer-support" "$RESOURCES_DIR/installer-core.sh"
+/bin/chmod 755 "$MACOS_DIR/CodexOneClickInstaller" "$RESOURCES_DIR/installer-support" "$RESOURCES_DIR/installer-core.sh" "$RESOURCES_DIR/install-skill-collections.sh"
 /usr/bin/plutil -lint "$CONTENTS/Info.plist" >/dev/null
 
 architectures="$(/usr/bin/lipo -archs "$MACOS_DIR/CodexOneClickInstaller")"
@@ -248,7 +254,7 @@ ln -s /Applications "$DMG_STAGE/Applications"
 
 /bin/cp "$source_archive" "$DMG_STAGE/第三方许可与源码/$(/usr/bin/basename "$source_archive")"
 /bin/cp "$CODEX_PLUS_PATCH" \
-  "$DMG_STAGE/第三方许可与源码/v1.2.43-cross-provider-history.patch"
+  "$DMG_STAGE/第三方许可与源码/v1.2.44-cross-provider-history.patch"
 /usr/bin/tar -xOzf "$source_archive" "$codex_plus_provenance_member" \
   > "$DMG_STAGE/第三方许可与源码/CODEXKIT-PATCH.md"
 license_member="$(/usr/bin/tar -tzf "$source_archive" | /usr/bin/awk '/\/(LICENSE|COPYING)(\.[A-Za-z0-9_-]+)?$/ {print; exit}')"

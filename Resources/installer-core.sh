@@ -1836,6 +1836,15 @@ install_script_market() {
   fi
 }
 
+install_skill_collections() {
+  [[ -x "$SCRIPT_DIR/install-skill-collections.sh" \
+     && -f "$SCRIPT_DIR/skill-collections.json" \
+     && -d "$SCRIPT_DIR/skill-collections" ]] || return 66
+  UNICODEX_SKILL_MANIFEST="$SCRIPT_DIR/skill-collections.json" \
+    UNICODEX_SKILL_BUNDLE="$SCRIPT_DIR/skill-collections" \
+    "$SCRIPT_DIR/install-skill-collections.sh"
+}
+
 script_market_version() {
   local filename="$1"
   local config="$HOME/.config/Codex++/user_scripts.json"
@@ -2389,6 +2398,8 @@ install_command() {
 
   emit_event installing_scripts 0.78 'installing the Codex++ script market' null
   install_script_market || return $?
+  emit_event installing_skills 0.81 'installing 211 research skills' null
+  install_skill_collections || return $?
   if [[ "$TEST_MODE" == "1" && "${FAIL_AFTER_SCRIPTS:-0}" == "1" ]]; then
     emit_event install_failed null 'injected failure after script deployment' '"injected_script_failure"'
     return 75

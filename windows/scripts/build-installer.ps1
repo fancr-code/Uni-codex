@@ -190,12 +190,18 @@ $appStage = Join-Path $stage 'app'
 $payloadStage = Join-Path $stage 'offline-payloads'
 $guideStage = Join-Path $stage 'guides'
 $licenseStage = Join-Path $stage 'licenses'
+$skillsStage = Join-Path $stage 'skill-collections'
+$skillInstaller = Join-Path $RepositoryRoot 'scripts/Install-SkillCollections.ps1'
+$skillManifest = Join-Path $RepositoryRoot 'skills/collections.json'
 $temporaryDist = Join-Path $outputParent (
     '.' + (Split-Path -Leaf $output) + '-' + [Guid]::NewGuid().ToString('N') + '.tmp')
 $backupDist = $null
 try {
-    New-Item -ItemType Directory -Path $appStage, $guideStage, $licenseStage, $temporaryDist |
+    New-Item -ItemType Directory -Path $appStage, $guideStage, $licenseStage, $skillsStage, $temporaryDist |
         Out-Null
+    & $skillInstaller -ManifestPath $skillManifest -DestinationRoot $skillsStage -PrepareBundle
+    Copy-Item -LiteralPath $skillInstaller -Destination $stage
+    Copy-Item -LiteralPath $skillManifest -Destination (Join-Path $stage 'skill-collections.json')
     if ([string]::IsNullOrWhiteSpace($PublishRoot)) {
         $dotnet = Get-Command dotnet -ErrorAction SilentlyContinue
         if ($null -eq $dotnet) { Fail '.NET 8 SDK is required' }

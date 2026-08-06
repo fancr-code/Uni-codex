@@ -24,7 +24,7 @@ for contract in \
   'SHA256SUMS.txt' \
   'shasum -a 256' \
   'cross-provider-content-v1' \
-  'v1.2.43-cross-provider-history.patch' \
+  'v1.2.44-cross-provider-history.patch' \
   'CODEXKIT-PATCH.md' \
   '/bin/chmod -R u+w "$APP"' \
   '/usr/bin/xattr -cr "$APP"' \
@@ -37,8 +37,8 @@ done
 VERIFY_SCRIPT="$ROOT/scripts/verify-release-artifact.sh"
 [[ -f "$VERIFY_SCRIPT" ]] || fail 'missing scripts/verify-release-artifact.sh'
 for contract in \
-  '.version == "1.2.43"' \
-  'v1.2.43-cross-provider-history.patch'; do
+  '.version == "1.2.44"' \
+  'v1.2.44-cross-provider-history.patch'; do
   rg -Fq "$contract" "$VERIFY_SCRIPT" || fail "release verifier contract missing: $contract"
 done
 ! rg -Fq 'v1.2.42-cross-provider-history.patch' "$VERIFY_SCRIPT" \

@@ -12,7 +12,7 @@
 
 来源：https://github.com/BigPizzaV3/CodexPlusPlus
 
-上游版本：v1.2.43。安装包使用 `codexkit.1` / `cross-provider-content-v1` 下游兼容修订，修复 DeepSeek/Kimi 与 OpenAI 模型之间切换时旧历史消息 `content` 类型不兼容的问题。
+上游版本：v1.2.44。安装包使用 `codexkit.1` / `cross-provider-content-v1` 下游兼容修订，修复 DeepSeek/Kimi 与 OpenAI 模型之间切换时旧历史消息 `content` 类型不兼容的问题。
 
 许可证：AGPL-3.0-only。DMG 的“第三方许可与源码”目录同时包含与二进制版本一致的完整修订源码归档、`CODEXKIT-PATCH.md`、可单独审计的补丁文件和许可证文本。
 

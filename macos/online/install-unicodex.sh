@@ -5,6 +5,7 @@ umask 077
 OPENAI_ARM_URL='https://persistent.oaistatic.com/codex-app-prod/Codex.dmg'
 OPENAI_X64_URL='https://persistent.oaistatic.com/codex-app-prod/Codex-latest-x64.dmg'
 CODEX_PLUS_REPOSITORY='BigPizzaV3/CodexPlusPlus'
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORK_ROOT="$(/usr/bin/mktemp -d "${TMPDIR:-/tmp}/uni-codex.XXXXXX")"
 MOUNTS=()
 
@@ -63,14 +64,19 @@ openai_dmg="$WORK_ROOT/Codex.dmg"
 download "$openai_url" "$openai_dmg"
 install_app_from_dmg "$openai_dmg" 'ChatGPT.app'
 
-printf '正在查询 Codex++ GitHub Release…\n'
-release_json="$WORK_ROOT/codex-plus.json"
-download "https://api.github.com/repos/$CODEX_PLUS_REPOSITORY/releases/latest" "$release_json"
-version="$(/usr/bin/python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["tag_name"].lstrip("v"))' "$release_json")"
 arch="$(/usr/bin/uname -m)"
 [[ "$arch" == x86_64 ]] && asset_arch=x64 || asset_arch=arm64
-asset_name="CodexPlusPlus-$version-macos-$asset_arch.dmg"
-asset_url="$(/usr/bin/python3 - "$release_json" "$asset_name" <<'PY'
+BUNDLED_CODEX_PLUS_DMG="$SCRIPT_DIR/codex-plus-plus/CodexPlusPlus-$asset_arch.dmg"
+if [[ -s "$BUNDLED_CODEX_PLUS_DMG" ]]; then
+  codex_plus_dmg="$BUNDLED_CODEX_PLUS_DMG"
+  printf '使用安装包内置的 Codex++ (%s)…\n' "$asset_arch"
+else
+  printf '安装包未包含 Codex++，正在查询官方 GitHub Release…\n'
+  release_json="$WORK_ROOT/codex-plus.json"
+  download "https://api.github.com/repos/$CODEX_PLUS_REPOSITORY/releases/latest" "$release_json"
+  version="$(/usr/bin/python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["tag_name"].lstrip("v"))' "$release_json")"
+  asset_name="CodexPlusPlus-$version-macos-$asset_arch.dmg"
+  asset_url="$(/usr/bin/python3 - "$release_json" "$asset_name" <<'PY'
 import json, sys
 data = json.load(open(sys.argv[1]))
 matches = [a['browser_download_url'] for a in data['assets'] if a['name'] == sys.argv[2]]
@@ -79,8 +85,9 @@ if len(matches) != 1:
 print(matches[0])
 PY
 )"
-codex_plus_dmg="$WORK_ROOT/$asset_name"
-download "$asset_url" "$codex_plus_dmg"
+  codex_plus_dmg="$WORK_ROOT/$asset_name"
+  download "$asset_url" "$codex_plus_dmg"
+fi
 codex_plus_mount="$(mount_dmg "$codex_plus_dmg")"
 for app_name in 'Codex++.app' 'Codex++ 管理工具.app'; do
   app="$codex_plus_mount/$app_name"
@@ -89,5 +96,9 @@ for app_name in 'Codex++.app' 'Codex++ 管理工具.app'; do
   /usr/bin/sudo /usr/bin/ditto "$app" "/Applications/$app_name"
 done
 /usr/bin/hdiutil detach "$codex_plus_mount" >/dev/null
+
+printf '正在安装科研技能合集…\n'
+UNICODEX_SKILL_MANIFEST="$SCRIPT_DIR/skills/collections.json" \
+  "$SCRIPT_DIR/install-skill-collections.sh"
 
 printf 'Uni-codex 安装完成。\n'

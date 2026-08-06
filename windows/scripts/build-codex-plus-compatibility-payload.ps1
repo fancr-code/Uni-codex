@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-Builds the fixed Codex++ v1.2.43 Windows compatibility payload.
+Builds the fixed Codex++ v1.2.44 Windows compatibility payload.
 
 .DESCRIPTION
 Applies the shared CodexKit patch to the pinned upstream source, runs the
@@ -14,7 +14,7 @@ explicit fixtureOnly marker and are not accepted by BuiltRoot release inspection
 [CmdletBinding()]
 param(
     [ValidateNotNullOrEmpty()]
-    [string] $Tag = 'v1.2.43',
+    [string] $Tag = 'v1.2.44',
 
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
@@ -35,28 +35,28 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$ExpectedTag = 'v1.2.43'
+$ExpectedTag = 'v1.2.44'
 $ExpectedSourceArchiveSha256 = `
-    '5612fbdc60244b9080823b596745c6e88f8cc5fa1996015b143b44ba6e51dd7f'
+    '2c9a1900b24e838ed7b9405534be15efc81a670636cd97d4de8a16cab17a73cb'
 $ExpectedPatchSha256 = `
-    '5a411571c2c950a3ce5f8b1ed3a72a0f42bb4c4de2f9ea3ba5de8d767e14f739'
-$UpstreamVersion = '1.2.43'
+    '4a5d84b215ecf729b61a1b675d29af8f11dc3c86698edeebbe03d0c732a53e15'
+$UpstreamVersion = '1.2.44'
 $PatchRevision = 'codexkit.1'
-$PayloadVersion = '1.2.43+codexkit.1'
+$PayloadVersion = '1.2.44+codexkit.1'
 $CompatibilityRevision = 'cross-provider-content-v1'
 $ExecutableMetadataMagic = 'CODEXKIT-EXECUTABLE-METADATA-V1:'
 $SetupProvenanceSchema = 'CODEXKIT-SETUP-PROVENANCE-V1'
 $SetupProvenanceMagic = "$SetupProvenanceSchema`:"
 $PerUserInstallDir = '$LOCALAPPDATA\Programs\Codex++'
-$SetupName = 'CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe'
-$SourceName = 'CodexPlusPlus-v1.2.43-codexkit.1-source.tar.gz'
-$UpstreamDirectory = 'CodexPlusPlus-1.2.43'
+$SetupName = 'CodexPlusPlus-1.2.44-codexkit.1-windows-x64-setup.exe'
+$SourceName = 'CodexPlusPlus-v1.2.44-codexkit.1-source.tar.gz'
+$UpstreamDirectory = 'CodexPlusPlus-1.2.44'
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $WindowsRoot = Split-Path -Parent $ScriptRoot
 $RepositoryRoot = Split-Path -Parent $WindowsRoot
 $SourcesFile = Join-Path (Join-Path $WindowsRoot 'vendor') 'upstream-sources.json'
 $CanonicalPatch = Join-Path (Join-Path (Join-Path $RepositoryRoot 'patches') `
-    'CodexPlusPlus') 'v1.2.43-cross-provider-history.patch'
+    'CodexPlusPlus') 'v1.2.44-cross-provider-history.patch'
 $SharedFixture = Join-Path (Join-Path (Join-Path $RepositoryRoot 'tests') 'fixtures') `
     'codex-plus/cross_provider_content.rs'
 $WorkRoot = ''
@@ -722,8 +722,8 @@ function Convert-NsisToCodexKitPerUserInstaller([string] $NsiPath) {
     if ($anchorIndex -lt 0) { Fail 'CodexPlusPlus.nsi version anchor is missing' }
     $metadata = @"
 
-VIProductVersion "1.2.43.1"
-VIFileVersion "1.2.43.1"
+VIProductVersion "1.2.44.1"
+VIFileVersion "1.2.44.1"
 VIAddVersionKey "ProductName" "Codex++"
 VIAddVersionKey "ProductVersion" "`${VERSION}"
 VIAddVersionKey "FileVersion" "`${VERSION}"
@@ -784,7 +784,7 @@ if ($canonicalPatchSha -cne $ExpectedPatchSha256) {
     Fail "repository shared patch SHA-256 is not the reviewed digest: $canonicalPatchSha"
 }
 if ($inputPatchSha -cne $ExpectedPatchSha256) {
-    Fail 'Patch must be byte-identical to the reviewed repository v1.2.43 shared patch'
+    Fail 'Patch must be byte-identical to the reviewed repository v1.2.44 shared patch'
 }
 Assert-RegularFile $SourcesFile 'upstream source policy'
 Assert-RegularFile $SharedFixture 'shared cross-provider Rust fixture'
@@ -792,7 +792,7 @@ $sources = Get-Content -LiteralPath $SourcesFile -Raw | ConvertFrom-Json
 $expectedSourceUrl = "https://github.com/BigPizzaV3/CodexPlusPlus/archive/refs/tags/$ExpectedTag.tar.gz"
 if ($sources.codexPlusPlusTag -cne $ExpectedTag -or
     $sources.codexPlusPlusSource -cne $expectedSourceUrl) {
-    Fail 'upstream source policy is not pinned to the exact Codex++ v1.2.43 archive'
+    Fail 'upstream source policy is not pinned to the exact Codex++ v1.2.44 archive'
 }
 
 $OutputFull = [IO.Path]::GetFullPath($OutputRoot)
@@ -838,7 +838,7 @@ try {
     }
     $sourceSha = Get-Sha256 $archiveFull
     if (-not $TestMode -and $sourceSha -cne $ExpectedSourceArchiveSha256) {
-        Fail 'pinned upstream source archive SHA-256 does not match the reviewed v1.2.43 archive'
+        Fail 'pinned upstream source archive SHA-256 does not match the reviewed v1.2.44 archive'
     }
     $patchSha = $ExpectedPatchSha256
     $extractRoot = Join-Path $WorkRoot 'extracted'
@@ -886,7 +886,7 @@ try {
         'codex-plus-core') 'tests/codexkit_cross_provider_content.rs'
     Copy-Item -LiteralPath $SharedFixture -Destination $sourceFixture -Force
     $patchInSource = Join-Path (Join-Path (Join-Path $sourceRoot 'patches') `
-        'CodexPlusPlus') 'v1.2.43-cross-provider-history.patch'
+        'CodexPlusPlus') 'v1.2.44-cross-provider-history.patch'
     New-Item -ItemType Directory -Path (Split-Path -Parent $patchInSource) `
         -Force | Out-Null
     Copy-Item -LiteralPath $PatchFull -Destination $patchInSource -Force
@@ -954,7 +954,7 @@ try {
         upstreamTag = $ExpectedTag
         upstreamSource = $expectedSourceUrl
         sourceArchiveSha256 = $sourceSha
-        patch = 'patches/CodexPlusPlus/v1.2.43-cross-provider-history.patch'
+        patch = 'patches/CodexPlusPlus/v1.2.44-cross-provider-history.patch'
         patchSha256 = $patchSha
         patchRevision = $PatchRevision
         payloadVersion = $PayloadVersion
@@ -1002,7 +1002,7 @@ try {
 - Upstream tag: $ExpectedTag
 - Upstream source: $expectedSourceUrl
 - Source archive SHA-256: $sourceSha
-- Patch: patches/CodexPlusPlus/v1.2.43-cross-provider-history.patch
+- Patch: patches/CodexPlusPlus/v1.2.44-cross-provider-history.patch
 - Patch SHA-256: $patchSha
 - Patch revision: $PatchRevision
 - Payload version: $PayloadVersion

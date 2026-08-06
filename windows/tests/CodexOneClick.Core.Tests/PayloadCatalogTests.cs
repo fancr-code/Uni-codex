@@ -13,7 +13,7 @@ public sealed class PayloadCatalogTests : IDisposable
     public PayloadCatalogTests() => Directory.CreateDirectory(_temporaryRoot);
 
     [Fact]
-    public async Task Valid_schema_2_catalog_and_payload_tree_pass()
+    public async Task Checked_in_v1_2_44_fixture_validates_against_compiled_policy()
     {
         var root = CopyValidFixture();
 
@@ -21,6 +21,18 @@ public sealed class PayloadCatalogTests : IDisposable
 
         Assert.Equal(2, catalog.SchemaVersion);
         Assert.Equal(6, catalog.Entries.Count);
+        var setup = catalog.Entries.Single(entry =>
+            entry.Id == "codex-plus-plus-windows-x64");
+        var source = catalog.Entries.Single(entry =>
+            entry.Id == "codex-plus-plus-source");
+        Assert.Equal("1.2.44+codexkit.1", setup.Version);
+        Assert.Equal(
+            "apps/CodexPlusPlus-1.2.44-codexkit.1-windows-x64-setup.exe",
+            setup.RelativePath);
+        Assert.Equal("1.2.44+codexkit.1", source.Version);
+        Assert.Equal(
+            "sources/CodexPlusPlus-v1.2.44-codexkit.1-source.tar.gz",
+            source.RelativePath);
     }
 
     [Fact]
@@ -126,7 +138,7 @@ public sealed class PayloadCatalogTests : IDisposable
     [InlineData("codex-plus-plus-windows-x64", "apps/setup.exe", "exe")]
     [InlineData("codex-plus-plus-windows-x64", "apps/CodexPlusPlus-setup.exe", "archive")]
     [InlineData("codex-plus-plus-source", "sources/source.tar.gz", "archive")]
-    [InlineData("codex-plus-plus-source", "sources/CodexPlusPlus-v1.2.43.tar.gz", "exe")]
+    [InlineData("codex-plus-plus-source", "sources/CodexPlusPlus-v1.2.44.tar.gz", "exe")]
     [InlineData("model-catalog", "metadata/models.json", "json")]
     [InlineData("model-catalog", "model-catalog.json", "file")]
     [InlineData("plugin-marketplaces", "metadata/plugins", "directory")]

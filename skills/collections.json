@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "collections": [
+    {
+      "id": "nature-skills",
+      "name": "Nature Skills",
+      "repository": "Yuan1z0825/nature-skills",
+      "commit": "9410400815df189d3e76d4be19c74afa68d03412",
+      "skillsRoot": "skills",
+      "license": "MIT"
+    },
+    {
+      "id": "scientific-agent-skills",
+      "name": "Scientific Agent Skills",
+      "repository": "K-Dense-AI/scientific-agent-skills",
+      "commit": "d767725c6e93b1d02a220e6be75b261a9833ede5",
+      "skillsRoot": "skills",
+      "license": "MIT"
+    },
+    {
+      "id": "research-skills",
+      "name": "Research Skills",
+      "repository": "neuromechanist/research-skills",
+      "commit": "b597928beb9f1b8b9b4e4f922da1a1ccc691a4da",
+      "skillsRoot": ".",
+      "license": "MIT"
+    }
+  ]
+}

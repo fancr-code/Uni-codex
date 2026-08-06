@@ -1,0 +1,480 @@
+diff --git a/apps/codex-plus-manager/src-tauri/src/commands.rs b/apps/codex-plus-manager/src-tauri/src/commands.rs
+index fa76094..22aff5a 100644
+--- a/apps/codex-plus-manager/src-tauri/src/commands.rs
++++ b/apps/codex-plus-manager/src-tauri/src/commands.rs
+@@ -454,6 +454,12 @@ pub fn startup_options() -> CommandResult<StartupPayload> {
+         },
+     )
+ }
++#[tauri::command]
++pub fn take_content_compatibility_notice()
++-> Result<Option<codex_plus_core::compatibility_notice::ContentRepairNotice>, String> {
++    codex_plus_core::compatibility_notice::take_content_repair_notice()
++        .map_err(|error| error.to_string())
++}
+ 
+ pub fn startup_should_show_update() -> bool {
+     should_show_update(
+diff --git a/apps/codex-plus-manager/src-tauri/src/lib.rs b/apps/codex-plus-manager/src-tauri/src/lib.rs
+index 65caed1..0854ece 100644
+--- a/apps/codex-plus-manager/src-tauri/src/lib.rs
++++ b/apps/codex-plus-manager/src-tauri/src/lib.rs
+@@ -64,6 +64,7 @@ pub fn run() {
+         .invoke_handler(tauri::generate_handler![
+             commands::backend_version,
+             commands::startup_options,
++            commands::take_content_compatibility_notice,
+             commands::load_overview,
+             commands::launch_codex_plus,
+             commands::restart_codex_plus,
+diff --git a/apps/codex-plus-manager/src/App.tsx b/apps/codex-plus-manager/src/App.tsx
+index b41a66b..81e89ec 100644
+--- a/apps/codex-plus-manager/src/App.tsx
++++ b/apps/codex-plus-manager/src/App.tsx
+@@ -753,6 +753,10 @@ function syncMarketInstalledState(current: ScriptMarketResult | null, userScript
+ type StartupResult = CommandResult<{
+   showUpdate: boolean;
+ }>;
++type ContentCompatibilityNotice = {
++  repairedMessageCount: number;
++  timestampMs: number;
++};
+ 
+ type Route = "overview" | "relay" | "relayEnvironment" | "sessions" | "context" | "enhance" | "dreamSkin" | "zedRemote" | "userScripts" | "recommendations" | "maintenance" | "about" | "settings";
+ type Theme = "dark" | "light";
+@@ -960,6 +964,24 @@ export function App() {
+       return null;
+     }
+   };
++  const refreshContentCompatibilityNotice = async () => {
++    try {
++      const result = await call<ContentCompatibilityNotice | null>(
++        "take_content_compatibility_notice",
++      );
++      if (result && result.repairedMessageCount > 0) {
++        showNotice(
++          t("跨模型兼容"),
++          tf("已兼容转换 {0} 条旧会话内容，可继续使用当前任务。", [
++            result.repairedMessageCount,
++          ]),
++          "ok",
++        );
++      }
++    } catch {
++      // A missing notice must never interrupt the manager.
++    }
++  };
+ 
+   const refreshOverview = async (silent = false) => {
+     const result = await run(() => call<OverviewResult>("load_overview"));
+@@ -2353,6 +2375,7 @@ export function App() {
+   useEffect(() => {
+     void (async () => {
+       const startup = await run(() => call<StartupResult>("startup_options"));
++      await refreshContentCompatibilityNotice();
+       if (startup?.showUpdate) {
+         setRoute("about");
+         void checkUpdate(false);
+@@ -2382,6 +2405,7 @@ export function App() {
+ 
+   useEffect(() => {
+     const timer = window.setInterval(() => {
++      void refreshContentCompatibilityNotice();
+       void refreshPendingProviderImport(true);
+     }, 1200);
+     return () => window.clearInterval(timer);
+diff --git a/crates/codex-plus-core/src/compatibility_notice.rs b/crates/codex-plus-core/src/compatibility_notice.rs
+new file mode 100644
+index 0000000..2042364
+--- /dev/null
++++ b/crates/codex-plus-core/src/compatibility_notice.rs
+@@ -0,0 +1,88 @@
++use std::io;
++use std::path::PathBuf;
++use std::sync::{Mutex, OnceLock};
++use std::time::{SystemTime, UNIX_EPOCH};
++
++use serde::{Deserialize, Serialize};
++
++const NOTICE_FILE: &str = "content-compatibility-notice.json";
++
++static NOTICE_IO_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
++static TEST_NOTICE_PATH: OnceLock<Mutex<Option<PathBuf>>> = OnceLock::new();
++
++#[derive(Debug, Clone, Serialize, Deserialize)]
++#[serde(rename_all = "camelCase")]
++pub struct ContentRepairNotice {
++    pub repaired_message_count: usize,
++    pub timestamp_ms: u64,
++}
++
++pub fn record_content_repair(repaired_message_count: usize) -> io::Result<()> {
++    if repaired_message_count == 0 {
++        return Ok(());
++    }
++
++    let _guard = notice_io_lock()?;
++    let path = notice_path();
++    if let Some(parent) = path.parent() {
++        std::fs::create_dir_all(parent)?;
++    }
++    let previous_count = match std::fs::read(&path) {
++        Ok(bytes) => serde_json::from_slice::<ContentRepairNotice>(&bytes)
++            .map(|notice| notice.repaired_message_count)
++            .unwrap_or(0),
++        Err(error) if error.kind() == io::ErrorKind::NotFound => 0,
++        Err(error) => return Err(error),
++    };
++    let notice = ContentRepairNotice {
++        repaired_message_count: previous_count.saturating_add(repaired_message_count),
++        timestamp_ms: now_ms(),
++    };
++    let bytes = serde_json::to_vec(&notice)
++        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
++    crate::settings::atomic_write(&path, &bytes).map_err(io::Error::other)
++}
++
++pub fn take_content_repair_notice() -> io::Result<Option<ContentRepairNotice>> {
++    let _guard = notice_io_lock()?;
++    let path = notice_path();
++    let bytes = match std::fs::read(&path) {
++        Ok(bytes) => bytes,
++        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
++        Err(error) => return Err(error),
++    };
++    let notice = serde_json::from_slice(&bytes)
++        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
++    std::fs::remove_file(path)?;
++    Ok(Some(notice))
++}
++
++fn notice_path() -> PathBuf {
++    if let Ok(guard) = TEST_NOTICE_PATH.get_or_init(|| Mutex::new(None)).lock() {
++        if let Some(path) = &*guard {
++            return path.clone();
++        }
++    }
++    crate::paths::default_app_state_dir().join(NOTICE_FILE)
++}
++
++fn notice_io_lock() -> io::Result<std::sync::MutexGuard<'static, ()>> {
++    NOTICE_IO_LOCK
++        .get_or_init(|| Mutex::new(()))
++        .lock()
++        .map_err(|_| io::Error::other("compatibility notice lock poisoned"))
++}
++
++fn now_ms() -> u64 {
++    SystemTime::now()
++        .duration_since(UNIX_EPOCH)
++        .unwrap_or_default()
++        .as_millis() as u64
++}
++
++#[doc(hidden)]
++pub fn set_notice_path_for_tests(path: Option<PathBuf>) {
++    if let Ok(mut guard) = TEST_NOTICE_PATH.get_or_init(|| Mutex::new(None)).lock() {
++        *guard = path;
++    }
++}
+diff --git a/crates/codex-plus-core/src/dream_skin.rs b/crates/codex-plus-core/src/dream_skin.rs
+index 887c536..6e1c6c6 100644
+--- a/crates/codex-plus-core/src/dream_skin.rs
++++ b/crates/codex-plus-core/src/dream_skin.rs
+@@ -148,8 +148,11 @@ fn supported_image_extension(path: &Path) -> anyhow::Result<String> {
+ fn prepare_image(
+     source: &Path,
+     managed_dir: &Path,
+-    _extension: &str,
++    extension: &str,
+ ) -> anyhow::Result<(PathBuf, String)> {
++    if matches!(extension, "jpg" | "jpeg") {
++        return Ok((source.to_path_buf(), "jpg".to_string()));
++    }
+     let prepared = managed_dir.join(".dream-skin-import.jpg");
+     let output = std::process::Command::new("/usr/bin/sips")
+         .args(["-s", "format", "jpeg"])
+diff --git a/crates/codex-plus-core/src/lib.rs b/crates/codex-plus-core/src/lib.rs
+index 0bf914b..906850f 100644
+--- a/crates/codex-plus-core/src/lib.rs
++++ b/crates/codex-plus-core/src/lib.rs
+@@ -8,6 +8,7 @@ pub mod codex_app_state;
+ pub mod codex_home;
+ pub mod codex_local_storage;
+ pub mod codex_sqlite;
++pub mod compatibility_notice;
+ mod computer_use_guard;
+ pub mod diagnostic_log;
+ pub mod dream_skin;
+diff --git a/crates/codex-plus-core/src/protocol_proxy.rs b/crates/codex-plus-core/src/protocol_proxy.rs
+index ee01e3e..0d85789 100644
+--- a/crates/codex-plus-core/src/protocol_proxy.rs
++++ b/crates/codex-plus-core/src/protocol_proxy.rs
+@@ -149,6 +149,19 @@ pub fn responses_to_chat_completions(body: Value) -> anyhow::Result<Value> {
+         append_responses_input(input, &mut messages);
+     }
+     normalize_chat_messages(&mut messages);
++    let compatibility_repair = normalize_chat_message_contents(&mut messages);
++    if compatibility_repair.repaired_message_count > 0 {
++        let _ = crate::compatibility_notice::record_content_repair(
++            compatibility_repair.repaired_message_count,
++        );
++        let _ = crate::diagnostic_log::append_diagnostic_log(
++            "protocol_proxy.content_compatibility",
++            json!({
++                "repairedMessageCount": compatibility_repair.repaired_message_count,
++                "originalTypes": compatibility_repair.original_types
++            }),
++        );
++    }
+     let messages = collapse_system_messages_to_head(messages);
+     result["messages"] = json!(messages);
+ 
+@@ -2209,6 +2222,125 @@ fn normalize_chat_messages(messages: &mut [Value]) {
+     }
+ }
+ 
++#[derive(Default)]
++struct ContentCompatibilityRepair {
++    repaired_message_count: usize,
++    original_types: Vec<&'static str>,
++}
++
++fn normalize_chat_message_contents(messages: &mut [Value]) -> ContentCompatibilityRepair {
++    let mut report = ContentCompatibilityRepair::default();
++    for message in messages {
++        let Some(object) = message.as_object_mut() else {
++            continue;
++        };
++        let original = object.get("content").cloned().unwrap_or(Value::Null);
++        let (normalized, repaired) = normalize_chat_content(&original);
++        if repaired {
++            report.repaired_message_count += 1;
++            let original_type = json_value_type(&original);
++            if !report.original_types.contains(&original_type) {
++                report.original_types.push(original_type);
++            }
++        }
++        object.insert("content".to_string(), normalized);
++    }
++    report
++}
++
++fn normalize_chat_content(content: &Value) -> (Value, bool) {
++    match content {
++        Value::String(_) => (content.clone(), false),
++        Value::Array(parts) => {
++            let safe_parts = parts
++                .iter()
++                .filter_map(normalize_chat_part)
++                .collect::<Vec<_>>();
++            let repaired =
++                safe_parts.len() != parts.len() || safe_parts.as_slice() != parts.as_slice();
++            if safe_parts.is_empty() {
++                (Value::String(String::new()), true)
++            } else {
++                (Value::Array(safe_parts), repaired)
++            }
++        }
++        Value::Null => (Value::String(String::new()), true),
++        Value::Bool(value) => (Value::String(value.to_string()), true),
++        Value::Number(value) => (Value::String(value.to_string()), true),
++        Value::Object(_) => (Value::String(extract_compatible_text(content)), true),
++    }
++}
++
++fn normalize_chat_part(part: &Value) -> Option<Value> {
++    let Some(object) = part.as_object() else {
++        let text = extract_compatible_text(part);
++        return (!text.is_empty()).then(|| json!({ "type": "text", "text": text }));
++    };
++    match object.get("type").and_then(Value::as_str) {
++        Some("text") => object
++            .get("text")
++            .and_then(Value::as_str)
++            .filter(|text| !text.is_empty())
++            .map(|text| json!({ "type": "text", "text": text })),
++        Some("image_url") => object.get("image_url").and_then(|image_url| {
++            if image_url.is_string() || image_url.is_object() {
++                Some(json!({ "type": "image_url", "image_url": image_url }))
++            } else {
++                None
++            }
++        }),
++        _ => {
++            let text = extract_compatible_text(part);
++            (!text.is_empty()).then(|| json!({ "type": "text", "text": text }))
++        }
++    }
++}
++
++fn extract_compatible_text(value: &Value) -> String {
++    if let Some(text) = value.as_str() {
++        return text.to_string();
++    }
++    if let Some(object) = value.as_object() {
++        for key in ["text", "content", "output_text", "refusal"] {
++            if let Some(candidate) = object.get(key) {
++                let text = extract_compatible_text(candidate);
++                if !text.trim().is_empty() {
++                    return text;
++                }
++            }
++        }
++        return format!(
++            "[兼容转换的历史内容] {}",
++            serde_json::to_string(value).unwrap_or_else(|_| "{}".to_string())
++        );
++    }
++    if let Some(parts) = value.as_array() {
++        return parts
++            .iter()
++            .map(extract_compatible_text)
++            .filter(|text| !text.trim().is_empty())
++            .collect::<Vec<_>>()
++            .join("\n");
++    }
++    match value {
++        Value::Null => String::new(),
++        Value::Bool(value) => value.to_string(),
++        Value::Number(value) => value.to_string(),
++        Value::String(_) | Value::Array(_) | Value::Object(_) => unreachable!(),
++    }
++}
++
++fn json_value_type(value: &Value) -> &'static str {
++    match value {
++        Value::Null => "null",
++        Value::Bool(_) => "boolean",
++        Value::Number(_) => "number",
++        Value::String(_) => "string",
++        Value::Array(_) => "array",
++        Value::Object(_) => "object",
++    }
++}
++
+ fn collapse_system_messages_to_head(messages: Vec<Value>) -> Vec<Value> {
+     let mut system_chunks = Vec::new();
+     let mut rest = Vec::with_capacity(messages.len());
+@@ -2379,7 +2511,12 @@ fn responses_content_to_chat_content(_role: &str, content: &Value) -> Value {
+                     has_non_text_part = true;
+                 }
+             }
+-            _ => {}
++            _ => {
++                chat_parts.push(json!({
++                    "type": "text",
++                    "text": extract_compatible_text(part)
++                }));
++            }
+         }
+     }
+ 
+diff --git a/crates/codex-plus-core/tests/dream_skin.rs b/crates/codex-plus-core/tests/dream_skin.rs
+index 0356d1c..2884caa 100644
+--- a/crates/codex-plus-core/tests/dream_skin.rs
++++ b/crates/codex-plus-core/tests/dream_skin.rs
+@@ -108,12 +108,54 @@ fn imports_supported_image_into_managed_theme_directory() {
+     assert!(imported.starts_with(temp.path().join("dream-skin/theme")));
+     assert_eq!(
+         imported.file_name().and_then(|name| name.to_str()),
+-        Some("current.png")
++        if cfg!(target_os = "macos") {
++            Some("current.jpg")
++        } else {
++            Some("current.png")
++        }
+     );
+-    assert_eq!(std::fs::read(&imported).unwrap(), image);
++    if cfg!(target_os = "macos") {
++        assert!(
++            std::fs::read(&imported)
++                .unwrap()
++                .starts_with(&[0xff, 0xd8, 0xff])
++        );
++    } else {
++        assert_eq!(std::fs::read(&imported).unwrap(), image);
++    }
+     assert!(is_managed_dream_skin_image(&imported, temp.path()));
+ }
+ 
++#[cfg(target_os = "macos")]
++#[test]
++fn imports_existing_jpeg_without_lossy_reencoding() {
++    let temp = tempfile::tempdir().unwrap();
++    let source = temp.path().join("source.jpg");
++    let image =
++        include_bytes!("../../../assets/inject/upstream/dream-skin/windows/dream-reference.jpg");
++    std::fs::write(&source, image).unwrap();
++
++    let imported = import_dream_skin_image(&source, temp.path()).unwrap();
++
++    assert_eq!(
++        imported.file_name().and_then(|name| name.to_str()),
++        Some("current.jpg")
++    );
++    assert_eq!(std::fs::read(imported).unwrap(), image);
++}
++
++#[cfg(target_os = "macos")]
++#[test]
++fn rejects_invalid_image_during_macos_preparation() {
++    let temp = tempfile::tempdir().unwrap();
++    let source = temp.path().join("invalid.png");
++    std::fs::write(&source, b"not a valid image").unwrap();
++
++    let error = import_dream_skin_image(&source, temp.path()).unwrap_err();
++
++    assert!(error.to_string().contains("macOS could not convert"));
++}
++
+ #[test]
+ fn rejects_source_larger_than_fifty_mebibytes() {
+     let temp = tempfile::tempdir().unwrap();
+diff --git a/crates/codex-plus-core/tests/dream_skin_market.rs b/crates/codex-plus-core/tests/dream_skin_market.rs
+index 5536ba1..2fa9934 100644
+--- a/crates/codex-plus-core/tests/dream_skin_market.rs
++++ b/crates/codex-plus-core/tests/dream_skin_market.rs
+@@ -55,7 +55,7 @@ async fn installs_verified_market_theme_into_local_library() {
+     config.name = "Market Demo".to_string();
+     config.style_preset = "cyber-neon".to_string();
+     let config = serde_json::to_vec(&config).unwrap();
+-    let image = b"\x89PNG\r\n\x1a\nmarket-image";
++    let image = include_bytes!("../../../assets/inject/dream-skin-default.png");
+     mount_theme(&server, &config, image).await;
+ 
+     let installed = install_market_theme_from_base(
+@@ -82,7 +82,11 @@ async fn installs_verified_market_theme_into_local_library() {
+     assert!(
+         state
+             .path()
+-            .join("dream-skin/themes/market-demo/image.png")
++            .join(if cfg!(target_os = "macos") {
++                "dream-skin/themes/market-demo/image.jpg"
++            } else {
++                "dream-skin/themes/market-demo/image.png"
++            })
+             .is_file()
+     );
+     let records =
+diff --git a/scripts/installer/macos/package-dmg.sh b/scripts/installer/macos/package-dmg.sh
+index 287778e..b59aa03 100755
+--- a/scripts/installer/macos/package-dmg.sh
++++ b/scripts/installer/macos/package-dmg.sh
+@@ -3,6 +3,7 @@ set -euo pipefail
+ 
+ VERSION="${1:-0.0.0}"
+ ARCH="${2:-$(uname -m)}"
++CODEXKIT_COMPATIBILITY_REVISION="${CODEXKIT_COMPATIBILITY_REVISION:?compatibility revision is required}"
+ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+ DIST="$ROOT/dist/macos"
+ STAGE="$DIST/stage"
+@@ -68,6 +69,8 @@ create_app() {
+   <string>$VERSION</string>
+   <key>CFBundleShortVersionString</key>
+   <string>$VERSION</string>
++  <key>CodexKitCompatibilityRevision</key>
++  <string>$CODEXKIT_COMPATIBILITY_REVISION</string>
+   <key>CFBundleInfoDictionaryVersion</key>
+   <string>6.0</string>
+   <key>CFBundlePackageType</key>

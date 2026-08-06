@@ -1,118 +1,140 @@
-# Codex 一键安装生态
+# Uni-codex
 
-本仓库提供 macOS 与 Windows 的 Codex/Codex++ 部署工具，并连接 Uni-Scholar 科研生态。
+<div align="center">
 
-## 生态优势：连续科研工作流
+**给普通用户准备的 Codex + Codex++ 一键安装器**
 
-- [Uni-Scholar 云端工作站](https://uni-scholar.asia)：云端检索、协作与长流程科研任务。
-- [Research Kit 本地中枢](https://uni-scholar.asia/research-kit)：连接 Zotero、Obsidian 与本地知识库。
-- Codex/Codex++ 执行层：完成代码、文档、数据处理与自动化。
+不用 Git，不用命令行，不用配置开发环境。下载、双击，跟着提示完成安装。
 
-三层共同构成从知识沉淀、研究推理到执行交付的连续科研工作流。Research Kit 当前为 macOS 生态产品；Windows 用户可把它作为生态链接和可选配套，但它不随 Windows 安装包预装。
+[![Windows](https://img.shields.io/badge/Windows-下载安装包-0078D4?style=for-the-badge&logo=windows11&logoColor=white)](https://github.com/fancr-code/Uni-codex/releases/download/v1.1.0-online/Uni-codex-Windows-x64-Online-Setup.exe)
+[![macOS](https://img.shields.io/badge/macOS-下载安装包-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/fancr-code/Uni-codex/releases/download/v1.1.0-online/Uni-codex-macOS-Online.dmg)
 
-## 在线精简版 Release
+[查看最新版本](https://github.com/fancr-code/Uni-codex/releases/latest) · [问题反馈](https://github.com/fancr-code/Uni-codex/issues)
 
-Release 提供 Windows x64 与 macOS 在线精简安装包。安装包不镜像、不再分发官方 Codex 桌面应用：Windows 安装时通过 Microsoft Store 产品 `9PLM9XGG6VKS` 获取，macOS 安装时从 OpenAI 官方 `persistent.oaistatic.com` 获取。Codex++ 从其 GitHub Release 获取或随 Windows 引导器集成。
+</div>
 
-- `Uni-codex-Windows-x64-Online-Setup.exe`
-- `Uni-codex-macOS-Online.dmg`
+## 为什么用 Uni-codex？
 
-构建入口为 `.github/workflows/online-release.yml`。推送形如 `v1.0.0-online` 的标签或手动运行工作流即可创建 Release。安装过程需要网络。
+官方 Codex 很强，但第一次安装、寻找正确版本、安装 Codex++，对新手并不直观。Uni-codex 把这些步骤放进一个图形化安装包里。
 
-本仓库不公开镜像分发官方 Codex 桌面应用、Microsoft Store 包或未声明许可证的脚本市场源码。最低 Windows 系统仍为 Windows 10 版本 1809（Build 17763），仅支持 x64。
+| 自己配置 | 使用 Uni-codex |
+| --- | --- |
+| 查找适合系统的 Codex 下载来源 | 自动获取对应平台的官方 Codex |
+| 手动下载并安装 Codex++ | 安装器统一处理 |
+| 分辨 Windows、Apple Silicon、Intel 版本 | 自动识别或提供正确入口 |
+| 阅读多份安装说明 | 跟着安装向导操作即可 |
+| 容易重复安装或覆盖已有版本 | 优先复用已安装且可用的 Codex |
 
-完整说明见 [Windows 文档](windows/README.md)。
+> Uni-codex 是轻量的**在线安装器**：安装时从官方来源获取最新组件，因此安装包体积小，使用时需要联网。
 
-## Windows 能力
+## 一键安装
 
-默认纯 API，支持 DeepSeek、Kimi 开放平台、Kimi Code、智谱 GLM、阿里千问、Xiaomi MiMo。安装器内提供各服务商官方 API Key 申请入口，并优先刷新上游模型；断网或刷新失败时回退到随包校验的离线快照，Kimi 开放平台快照包含 Kimi K3。
+### Windows
 
-推荐“OpenAI 账号 + 所选国产 API”：可在安装器内点击“获取 OpenAI 授权”，但实际模型调用仍由所选服务商完成。OpenAI 授权不等于 GPT API Key，不赠送 GPT API 额度，也不会获得账号未拥有的权限。
+支持 **Windows 10 1809 及以上版本、Windows 11（x64）**。
 
-安装器会复用健康 Codex，不重复安装或降级。Codex++ 带有 `cross-provider-content-v1`；同时配置 3 个插件市场和 9 个插件。用户可从作者的上游地址直接获取 `Context Used Meter` 与 `Codex Token Usage`；本公开仓库不镜像这些未声明许可证的脚本源码。API Key、OAuth Token、设备码、对话正文与敏感报告字段都会被排除或脱敏。
+1. 下载 [Windows 一键安装包](https://github.com/fancr-code/Uni-codex/releases/download/v1.1.0-online/Uni-codex-Windows-x64-Online-Setup.exe)。
+2. 双击 `Uni-codex-Windows-x64-Online-Setup.exe`。
+3. 按安装向导提示完成安装。
 
-## macOS
+安装器会通过微软官方渠道获取 Codex，并完成 Codex++ 的安装或集成。
 
-macOS 安装器支持 Apple Silicon 与 Intel。构建入口：
+### macOS
 
-```bash
-bash build-codex-one-click-installer.sh
-```
+支持 **Apple Silicon（M 系列）和 Intel Mac**。
 
-macOS 同样默认使用所选 API 服务商，可选 OpenAI 账号授权，并复用健康应用。具体构建、签名、硬件烟测和分发边界以仓库内 macOS 脚本及安装包引导为准。
+1. 下载 [macOS 一键安装包](https://github.com/fancr-code/Uni-codex/releases/download/v1.1.0-online/Uni-codex-macOS-Online.dmg)。
+2. 打开 `Uni-codex-macOS-Online.dmg`。
+3. 按窗口中的说明完成安装。
 
-### 开发构建与测试
+安装器会识别 Mac 的芯片类型，从 OpenAI 官方地址获取适合的 Codex，并安装 Codex++。
 
-```bash
-# macOS 构建与测试
-bash build-codex-one-click-installer.sh
-bash tests/run-all-tests.sh
-```
+## 你会得到什么？
 
-```powershell
-# Windows 开发构建与测试（从仓库根目录，在 Windows x64）
-# 前置：.NET 8 SDK、Node.js 22、Rust stable、NSIS、Inno Setup 7.0.2，
-# 并确保 dotnet、node、cargo、makensis、ISCC.exe 均在 PATH。
-# StorePackageResolver 会按 ProductId 从微软 DisplayCatalog/FE3 解析当前官方 MSIX；
-# 构建不会信任会变化为联网引导 EXE 的 get.microsoft.com 下载响应。
-dotnet restore windows/CodexOneClickInstaller.sln --locked-mode
-$compat = 'windows/build/codex-plus-compat'
-pwsh windows/scripts/build-codex-plus-compatibility-payload.ps1 `
-  -Tag v1.2.43 `
-  -Patch patches/CodexPlusPlus/v1.2.43-cross-provider-history.patch `
-  -OutputRoot $compat
+- **Codex 桌面版**：由官方来源下载，不在本仓库重复打包。
+- **Codex++**：随引导流程安装，减少手动配置步骤。
+- **211 个科研 Skills**：在线版与离线版都预装 Nature Skills、Scientific Agent Skills 和 Research Skills。
+- **跨平台支持**：一个项目同时覆盖 Windows 和 macOS。
+- **已有安装保护**：检测到健康的 Codex 时优先复用，避免无意义地重复安装或降级。
+- **更适合中文用户**：下载入口、安装说明和常见问题集中在同一页面。
 
-pwsh windows/scripts/refresh-offline-payloads.ps1 `
-  -OutputRoot windows/vendor/offline-payloads `
-  -CodexPlusPlusSetup "$compat/CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe" `
-  -CodexPlusPlusSource "$compat/CodexPlusPlus-v1.2.43-codexkit.1-source.tar.gz"
+## 可选模型与科研生态
 
-. windows/scripts/offline-payload-supply.ps1
-$active = Resolve-ActivePayloadRoot (
-  [IO.Path]::GetFullPath('windows/vendor/offline-payloads'))
-$iscc = (Get-Command ISCC.exe -ErrorAction Stop).Source
+Windows 配置工具支持 DeepSeek、Kimi 开放平台、Kimi Code、智谱 GLM、阿里千问和 Xiaomi MiMo 等 API 服务商，并提供相应的官方 API Key 申请入口。
 
-pwsh windows/tests/run-all-tests.ps1 `
-  -PayloadRoot $active `
-  -BuiltRoot $compat `
-  -TestResultsRoot windows/test-results/full
-pwsh windows/scripts/build-installer.ps1 `
-  -PayloadRoot $active -OutputDir dist -IsccPath $iscc
-```
+Uni-codex 也可以配合以下工具形成连续科研工作流：
 
-### 项目结构
+- [Uni-Scholar 云端工作站](https://uni-scholar.asia)：检索、协作与长流程科研任务。
+- [Research Kit](https://uni-scholar.asia/research-kit)：连接 Zotero、Obsidian 与本地知识库，目前主要面向 macOS。
+- Codex / Codex++：执行代码、文档、数据处理与自动化任务。
+
+这些功能均为可选项。只想安装 Codex 的用户，直接使用上方安装包即可。
+
+### 开箱即用的科研 Skills
+
+安装完成后，Codex 会自动获得三套经过固定版本管理的开源技能合集：
+
+- [Nature Skills](https://github.com/Yuan1z0825/nature-skills)：Nature 风格论文写作、润色、审稿、作图和投稿工作流，共 19 个技能。
+- [Scientific Agent Skills](https://github.com/K-Dense-AI/scientific-agent-skills)：覆盖生物、化学、医学、数据分析和科研数据库等场景，共 158 个技能。
+- [Research Skills](https://github.com/neuromechanist/research-skills)：研究规划、实验设计、文献与图表处理、工程化研究流程，共 34 个技能。
+
+三套合集合计 **211 个技能**。在线安装包在安装时获取锁定版本；离线安装包在构建时已将同一版本完整打包。安装器会保留用户自己维护的同名技能，不会静默覆盖。
+三套合集的 MIT 许可证会随技能一并保留在 `.codex/skills/.uni-codex-licenses/`。
+
+## 常见问题
+
+### 为什么安装包这么小？
+
+因为它是在线安装器，不把体积较大的官方 Codex 应用重复塞进仓库。运行安装器后，才会从 OpenAI、Microsoft 和相关项目的官方地址下载所需组件。
+
+### 安装时必须联网吗？
+
+是。下载 Codex、Codex++，以及刷新上游模型信息都需要网络。
+
+### Release 里的 Source code 是安装包吗？
+
+不是。`Source code (zip)` 和 `Source code (tar.gz)` 是 GitHub 为每个版本标签自动生成的源码快照。普通用户只需下载 `.exe` 或 `.dmg`。
+
+### OpenAI 授权等于 API Key 吗？
+
+不等于。OpenAI 账号授权不会赠送 GPT API 额度，也不会获得账号原本没有的权限。选择第三方 API 服务商时，实际模型调用及费用由相应服务商负责。
+
+### 这是 OpenAI 官方项目吗？
+
+不是。Uni-codex 是社区项目，与 OpenAI 没有隶属关系。Codex 的名称、商标和官方应用归其各自权利人所有。
+
+## 安全与隐私
+
+- Codex 桌面应用只从 OpenAI 或 Microsoft 官方渠道获取。
+- Codex++ 从其 GitHub Release 获取，或由安装引导器集成。
+- 本仓库不镜像分发官方 Codex 桌面应用、Microsoft Store 包或许可证不明确的脚本源码。
+- API Key、OAuth Token、设备码、对话正文等敏感内容不会作为公开构建产物上传。
+- 请不要在 Issue、日志、截图或公开配置中提交任何密钥和令牌。
+
+## 给开发者
+
+普通用户不需要阅读本节。项目的在线发布入口是 [`.github/workflows/online-release.yml`](.github/workflows/online-release.yml)，版本标签格式为 `v*-online`。
 
 ```text
 .
-├── README.md
-├── Resources/                  # macOS 资源与安装包指南
-├── scripts/                    # macOS 构建、验证与烟测
-├── tests/                      # macOS 测试
-├── windows/
-│   ├── README.md
-│   ├── installer/              # Inno Setup 外层安装器
-│   ├── src/                    # WPF GUI 与 InstallerCore
-│   ├── scripts/                # Windows 构建与载荷工具
-│   ├── tests/                  # Windows 契约与运行时测试
-│   └── docs/guides/            # Windows 随包指南
-└── .github/workflows/          # Windows CI 与正式发布工作流
+├── macos/                      # macOS 在线安装器
+├── windows/                    # Windows 安装器与配置工具
+├── scripts/                    # 构建、验证与烟雾测试
+├── tests/                      # 自动化测试
+├── Resources/                  # macOS 资源
+└── .github/workflows/          # CI 与 Release 工作流
 ```
 
-## 安全边界
-
-- 只从明确的官方服务商页面或已取得再分发授权的项目 Release 获取文件与凭据。
-- API Key、OAuth Token、设备码不应进入日志、报告、截图或公开配置。
-- 模型调用、OpenAI 授权和上游模型刷新需要网络，并受所选服务商与账号权限约束。
-- 本项目不是 OpenAI 产品；公开分发前应核对适用的许可、商标与再分发条款。
+Windows 的完整构建说明见 [windows/README.md](windows/README.md)。第三方组件和再分发边界见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 与 [LICENSES](LICENSES)。
 
 ## 开源许可证
 
-Uni-codex 原创安装器代码采用 [MIT License](LICENSE)。MIT 仅适用于本项目拥有
-版权的原创部分，不会重新授权 Codex、Codex++、插件、脚本、图标或商标。
+Uni-codex 原创安装器代码采用 [MIT License](LICENSE)。该许可证只适用于本项目拥有版权的原创部分，不会重新授权 Codex、Codex++、插件、脚本、图标或商标；第三方组件继续遵循各自的上游许可证。
 
-- OpenAI Codex CLI：Apache-2.0。
-- Codex++ 及其兼容补丁：AGPL-3.0-only。
-- 其他组件：保持各自上游许可证；未声明许可证的内容不由本仓库镜像分发。
+---
 
-完整边界见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 和
-[`LICENSES/`](LICENSES/)。
+<div align="center">
+
+如果 Uni-codex 帮你省下了配置时间，欢迎点一个 ⭐，也欢迎通过 [Issue](https://github.com/fancr-code/Uni-codex/issues) 提交建议。
+
+</div>

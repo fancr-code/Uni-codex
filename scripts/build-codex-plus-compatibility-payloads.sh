@@ -4,7 +4,7 @@ umask 077
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-UPSTREAM_VERSION='1.2.43'
+UPSTREAM_VERSION='1.2.44'
 PATCH_REVISION='codexkit.1'
 COMPATIBILITY_REVISION='cross-provider-content-v1'
 ARM_TARGET='aarch64-apple-darwin'
@@ -112,7 +112,7 @@ Downstream fixes:
   \`class\`, \`data-theme\`, \`data-appearance\`, and \`data-color-mode\`.
 - Align upstream Dream Skin import tests with macOS JPEG conversion behavior.
 - Avoid lossy re-encoding when a managed macOS Dream Skin image is already JPEG.
-- Refresh v1.2.43 upstream theme asset SHA-256 fixtures without altering the assets.
+- Refresh v1.2.44 upstream theme asset SHA-256 fixtures without altering the assets.
 
 Build sequence:
 

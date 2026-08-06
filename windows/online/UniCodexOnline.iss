@@ -20,6 +20,8 @@ WizardStyle=modern
 
 [Files]
 Source: "{#SourcePath}\Install-UniCodex.ps1"; DestDir: "{tmp}\Uni-codex"; Flags: deleteafterinstall
+Source: "{#SourcePath}\..\..\scripts\Install-SkillCollections.ps1"; DestDir: "{tmp}\Uni-codex"; Flags: deleteafterinstall
+Source: "{#SourcePath}\..\..\skills\collections.json"; DestDir: "{tmp}\Uni-codex\skills"; Flags: deleteafterinstall
 Source: "{#CodexPlusSetup}"; DestDir: "{tmp}\Uni-codex"; DestName: "CodexPlusPlus-Setup.exe"; Flags: deleteafterinstall
 
 [Run]

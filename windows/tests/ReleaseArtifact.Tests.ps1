@@ -159,7 +159,7 @@ if (-not [string]::IsNullOrWhiteSpace($env:CODEX_FAKE_ISCC_RUNTIME_BANNER)) {
     Copy-Item -LiteralPath (Join-Path $fakeState 'extracted') `
         -Destination $tamperedExtraction -Recurse
     [IO.File]::AppendAllText(
-        (Join-Path $tamperedExtraction 'offline-payloads/apps/CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe'),
+        (Join-Path $tamperedExtraction 'offline-payloads/apps/CodexPlusPlus-1.2.44-codexkit.1-windows-x64-setup.exe'),
         'tampered')
     $tamperedExtractionRejected = $false
     try {

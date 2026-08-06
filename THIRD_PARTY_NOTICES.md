@@ -29,7 +29,7 @@ administrator variable.
 
 Project: https://github.com/BigPizzaV3/CodexPlusPlus
 
-Pinned upstream version: v1.2.43.
+Pinned upstream version: v1.2.44.
 
 License metadata: AGPL-3.0-only. A copy is provided at
 `LICENSES/AGPL-3.0-only.txt`.

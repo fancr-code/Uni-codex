@@ -10,10 +10,10 @@ public sealed class ApplicationInstallerTests : IDisposable
     private const string CodexPublisher =
         "CN=50BDFD77-8903-4850-9FFE-6E8522F64D5B";
     private const string CodexVersion = "26.7.27.0";
-    private const string CodexPlusPlusVersion = "1.2.43+codexkit.1";
+    private const string CodexPlusPlusVersion = "1.2.44+codexkit.1";
     private const string CompatibilityRevision = "cross-provider-content-v1";
     private const string SetupName =
-        "CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe";
+        "CodexPlusPlus-1.2.44-codexkit.1-windows-x64-setup.exe";
 
     private readonly string _temporaryRoot = Path.Combine(
         Path.GetTempPath(),
@@ -661,6 +661,35 @@ public sealed class ApplicationInstallerTests : IDisposable
     }
 
     [Fact]
+    public async Task Checked_in_v1_2_44_catalog_is_accepted_by_application_installer()
+    {
+        var payloadRoot = Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory,
+            "../../../../fixtures/payload-root"));
+        var catalog = await new PayloadCatalogService().ValidateAsync(
+            payloadRoot,
+            fixtureMode: true);
+        var backend = new FakeProcessExecutionBackend();
+        var installer = CreateCodexPlusPlusInstaller(
+            backend,
+            new FakeApplicationTransactionCoordinator(),
+            new FakeCodexPlusPlusInstallationProbe(),
+            payloadRoot);
+
+        var result = await installer.ApplyAsync(
+            Plan(
+                "codex-plus-plus-windows-x64",
+                PlanAction.Install,
+                installedVersion: null),
+            catalog);
+
+        Assert.True(result.Changed);
+        Assert.Equal(
+            Path.Combine(payloadRoot, "apps", SetupName),
+            backend.Request!.FileName);
+    }
+
+    [Fact]
     public async Task CodexPlusPlus_setup_lease_remains_open_through_process_completion()
     {
         CreatePayload($"apps/{SetupName}");
@@ -916,7 +945,7 @@ public sealed class ApplicationInstallerTests : IDisposable
             path,
             """
 
-            CODEXKIT-EXECUTABLE-METADATA-V1:{"schemaVersion":1,"payloadVersion":"1.2.43+codexkit.1","compatibilityRevision":"cross-provider-content-v1","architecture":"x64","component":"launcher","fixtureOnly":false}
+            CODEXKIT-EXECUTABLE-METADATA-V1:{"schemaVersion":1,"payloadVersion":"1.2.44+codexkit.1","compatibilityRevision":"cross-provider-content-v1","architecture":"x64","component":"launcher","fixtureOnly":false}
 
             """);
 
@@ -945,7 +974,7 @@ public sealed class ApplicationInstallerTests : IDisposable
             path,
             """
 
-            CODEXKIT-SETUP-PROVENANCE-V1:{"schema":"CODEXKIT-SETUP-PROVENANCE-V1","schemaVersion":1,"setupFileName":"CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe","upstreamTag":"v1.2.43","patchSha256":"5a411571c2c950a3ce5f8b1ed3a72a0f42bb4c4de2f9ea3ba5de8d767e14f739","payloadVersion":"1.2.43+codexkit.1","compatibilityRevision":"cross-provider-content-v1","architecture":"x64","perUser":true,"executionLevel":"user","installDir":"$LOCALAPPDATA\\Programs\\Codex++","registryHive":"HKCU","shortcutScope":"currentUser","requiresElevation":false,"rawCreateProcessCompatible":true,"fixtureOnly":false,"executables":[{"name":"codex-plus-plus.exe","component":"launcher","sha256":"1111111111111111111111111111111111111111111111111111111111111111","payloadVersion":"1.2.43+codexkit.1","compatibilityRevision":"cross-provider-content-v1","architecture":"x64","metadataMagic":"CODEXKIT-EXECUTABLE-METADATA-V1:"},{"name":"codex-plus-plus-manager.exe","component":"manager","sha256":"2222222222222222222222222222222222222222222222222222222222222222","payloadVersion":"1.2.43+codexkit.1","compatibilityRevision":"cross-provider-content-v1","architecture":"x64","metadataMagic":"CODEXKIT-EXECUTABLE-METADATA-V1:"}]}
+            CODEXKIT-SETUP-PROVENANCE-V1:{"schema":"CODEXKIT-SETUP-PROVENANCE-V1","schemaVersion":1,"setupFileName":"CodexPlusPlus-1.2.44-codexkit.1-windows-x64-setup.exe","upstreamTag":"v1.2.44","patchSha256":"4a5d84b215ecf729b61a1b675d29af8f11dc3c86698edeebbe03d0c732a53e15","payloadVersion":"1.2.44+codexkit.1","compatibilityRevision":"cross-provider-content-v1","architecture":"x64","perUser":true,"executionLevel":"user","installDir":"$LOCALAPPDATA\\Programs\\Codex++","registryHive":"HKCU","shortcutScope":"currentUser","requiresElevation":false,"rawCreateProcessCompatible":true,"fixtureOnly":false,"executables":[{"name":"codex-plus-plus.exe","component":"launcher","sha256":"1111111111111111111111111111111111111111111111111111111111111111","payloadVersion":"1.2.44+codexkit.1","compatibilityRevision":"cross-provider-content-v1","architecture":"x64","metadataMagic":"CODEXKIT-EXECUTABLE-METADATA-V1:"},{"name":"codex-plus-plus-manager.exe","component":"manager","sha256":"2222222222222222222222222222222222222222222222222222222222222222","payloadVersion":"1.2.44+codexkit.1","compatibilityRevision":"cross-provider-content-v1","architecture":"x64","metadataMagic":"CODEXKIT-EXECUTABLE-METADATA-V1:"}]}
 
             """);
 
@@ -1117,9 +1146,10 @@ public sealed class ApplicationInstallerTests : IDisposable
     private CodexPlusPlusInstaller CreateCodexPlusPlusInstaller(
         IProcessExecutionBackend backend,
         IApplicationTransactionCoordinator directories,
-        ICodexPlusPlusInstallationProbe probe) =>
+        ICodexPlusPlusInstallationProbe probe,
+        string? payloadRoot = null) =>
         new(
-            _temporaryRoot,
+            payloadRoot ?? _temporaryRoot,
             LocalAppData(),
             new ProcessRunner(backend),
             directories,
@@ -1255,9 +1285,9 @@ public sealed class ApplicationInstallerTests : IDisposable
             Schema: "CODEXKIT-SETUP-PROVENANCE-V1",
             SchemaVersion: 1,
             SetupFileName: SetupName,
-            UpstreamTag: "v1.2.43",
+            UpstreamTag: "v1.2.44",
             PatchSha256:
-            "5a411571c2c950a3ce5f8b1ed3a72a0f42bb4c4de2f9ea3ba5de8d767e14f739",
+            "4a5d84b215ecf729b61a1b675d29af8f11dc3c86698edeebbe03d0c732a53e15",
             PayloadVersion: CodexPlusPlusVersion,
             CompatibilityRevision,
             Architecture: "x64",

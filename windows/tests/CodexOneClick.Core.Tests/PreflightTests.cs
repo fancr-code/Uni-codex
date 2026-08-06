@@ -141,7 +141,7 @@ public sealed class PreflightTests
         [
             new InstalledPackage(
                 PreflightService.CodexPlusPlusComponentIdentity,
-                "1.2.43+codexkit.1",
+                "1.2.44+codexkit.1",
                 true,
                 @"C:\Users\fixture\AppData\Local\Programs\Codex++\Codex++.exe")
         ];
