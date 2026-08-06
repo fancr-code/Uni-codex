@@ -6,8 +6,8 @@
 
 不用 Git，不用命令行，不用配置开发环境。下载、双击，跟着提示完成安装。
 
-[![Windows](https://img.shields.io/badge/Windows-下载安装包-0078D4?style=for-the-badge&logo=windows11&logoColor=white)](https://github.com/fancr-code/Uni-codex/releases/download/v1.0.0-online/Uni-codex-Windows-x64-Online-Setup.exe)
-[![macOS](https://img.shields.io/badge/macOS-下载安装包-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/fancr-code/Uni-codex/releases/download/v1.0.0-online/Uni-codex-macOS-Online.dmg)
+[![Windows](https://img.shields.io/badge/Windows-下载安装包-0078D4?style=for-the-badge&logo=windows11&logoColor=white)](https://github.com/fancr-code/Uni-codex/releases/download/v1.1.0-online/Uni-codex-Windows-x64-Online-Setup.exe)
+[![macOS](https://img.shields.io/badge/macOS-下载安装包-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/fancr-code/Uni-codex/releases/download/v1.1.0-online/Uni-codex-macOS-Online.dmg)
 
 [查看最新版本](https://github.com/fancr-code/Uni-codex/releases/latest) · [问题反馈](https://github.com/fancr-code/Uni-codex/issues)
 
@@ -33,7 +33,7 @@
 
 支持 **Windows 10 1809 及以上版本、Windows 11（x64）**。
 
-1. 下载 [Windows 一键安装包](https://github.com/fancr-code/Uni-codex/releases/download/v1.0.0-online/Uni-codex-Windows-x64-Online-Setup.exe)。
+1. 下载 [Windows 一键安装包](https://github.com/fancr-code/Uni-codex/releases/download/v1.1.0-online/Uni-codex-Windows-x64-Online-Setup.exe)。
 2. 双击 `Uni-codex-Windows-x64-Online-Setup.exe`。
 3. 按安装向导提示完成安装。
 
@@ -43,7 +43,7 @@
 
 支持 **Apple Silicon（M 系列）和 Intel Mac**。
 
-1. 下载 [macOS 一键安装包](https://github.com/fancr-code/Uni-codex/releases/download/v1.0.0-online/Uni-codex-macOS-Online.dmg)。
+1. 下载 [macOS 一键安装包](https://github.com/fancr-code/Uni-codex/releases/download/v1.1.0-online/Uni-codex-macOS-Online.dmg)。
 2. 打开 `Uni-codex-macOS-Online.dmg`。
 3. 按窗口中的说明完成安装。
 
