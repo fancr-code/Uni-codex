@@ -208,7 +208,7 @@ if [[ "${TEST_MODE:-0}" != 1 ]]; then
       .id == "codex-plus-plus-x86_64" or
       .id == "codex-plus-plus-source"
     )] | all(
-      .version == "1.2.43" and
+      .version == "1.2.44" and
       .compatibilityRevision == "cross-provider-content-v1"
     ))
   ' "$MANIFEST" >/dev/null || die 'required product payload set is invalid'
@@ -250,13 +250,13 @@ if [[ "${TEST_MODE:-0}" != 1 ]]; then
     | /usr/bin/awk '/\/CODEXKIT-PATCH\.md$/ {print; exit}')"
   [[ -n "$source_provenance_member" \
      && -s "$RESOURCES/CodexPlusPlus-Compatibility/CODEXKIT-PATCH.md" \
-     && -s "$RESOURCES/CodexPlusPlus-Compatibility/v1.2.43-cross-provider-history.patch" \
+     && -s "$RESOURCES/CodexPlusPlus-Compatibility/v1.2.44-cross-provider-history.patch" \
      && -s "$MOUNT_POINT/第三方许可与源码/CODEXKIT-PATCH.md" \
-     && -s "$MOUNT_POINT/第三方许可与源码/v1.2.43-cross-provider-history.patch" ]] \
+     && -s "$MOUNT_POINT/第三方许可与源码/v1.2.44-cross-provider-history.patch" ]] \
     || die 'Codex++ compatibility provenance is incomplete'
   /usr/bin/cmp -s \
-    "$ROOT/patches/CodexPlusPlus/v1.2.43-cross-provider-history.patch" \
-    "$RESOURCES/CodexPlusPlus-Compatibility/v1.2.43-cross-provider-history.patch" \
+    "$ROOT/patches/CodexPlusPlus/v1.2.44-cross-provider-history.patch" \
+    "$RESOURCES/CodexPlusPlus-Compatibility/v1.2.44-cross-provider-history.patch" \
     || die 'bundled Codex++ compatibility patch differs from the approved patch'
   [[ "$(/usr/bin/wc -c < "$MOUNT_POINT/第三方许可与源码/AGPL-3.0.txt" | /usr/bin/tr -d ' ')" -gt 20000 ]] \
     || die 'full AGPL-3.0 license text is missing'

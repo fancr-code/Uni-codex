@@ -75,8 +75,49 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
+      - name: Download Codex++ macOS installers
+        shell: bash
+        run: |
+          release_json="$RUNNER_TEMP/codex-plus.json"
+          curl --fail --location --retry 3 --connect-timeout 20 --max-time 1800 \
+            -H 'User-Agent: Uni-codex' \
+            'https://api.github.com/repos/BigPizzaV3/CodexPlusPlus/releases/latest' \
+            -o "$release_json"
+          python3 - "$release_json" "$RUNNER_TEMP" <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import subprocess
+          import sys
+
+          release = json.loads(pathlib.Path(sys.argv[1]).read_text())
+          output = pathlib.Path(sys.argv[2])
+          assets = {asset['name']: asset for asset in release.get('assets', [])}
+          for architecture in ('arm64', 'x64'):
+              name = f"CodexPlusPlus-{release['tag_name'].lstrip('v')}-macos-{architecture}.dmg"
+              asset = assets.get(name)
+              if asset is None:
+                  raise SystemExit(f'missing Codex++ macOS asset: {name}')
+              destination = output / f'CodexPlusPlus-{architecture}.dmg'
+              subprocess.run([
+                  'curl', '--fail', '--location', '--retry', '3',
+                  '--connect-timeout', '20', '--max-time', '1800',
+                  '-o', str(destination), asset['browser_download_url'],
+              ], check=True)
+              digest = asset.get('digest', '')
+              if not digest.startswith('sha256:'):
+                  raise SystemExit(f'Codex++ asset has no SHA-256 digest: {name}')
+              actual = hashlib.sha256(destination.read_bytes()).hexdigest()
+              if actual != digest.removeprefix('sha256:'):
+                  raise SystemExit(f'Codex++ SHA-256 mismatch: {name}')
+          PY
       - name: Build macOS online DMG
-        run: bash macos/online/build-online-dmg.sh dist/macos
+        run: |
+          CodexPlusPlusArmDmg="$RUNNER_TEMP/CodexPlusPlus-arm64.dmg"
+          CodexPlusPlusX64Dmg="$RUNNER_TEMP/CodexPlusPlus-x64.dmg"
+          bash macos/online/build-online-dmg.sh dist/macos \
+            "$CodexPlusPlusArmDmg" \
+            "$CodexPlusPlusX64Dmg"
       - uses: actions/upload-artifact@v7
         with:
           name: online-macos

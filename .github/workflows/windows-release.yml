@@ -127,16 +127,16 @@ jobs:
         shell: pwsh
         run: |
           windows/scripts/build-codex-plus-compatibility-payload.ps1 `
-            -Tag v1.2.43 `
-            -Patch patches/CodexPlusPlus/v1.2.43-cross-provider-history.patch `
+            -Tag v1.2.44 `
+            -Patch patches/CodexPlusPlus/v1.2.44-cross-provider-history.patch `
             -OutputRoot windows/build/codex-plus-compat
       - name: Refresh complete official offline payload
         shell: pwsh
         run: |
           windows/scripts/refresh-offline-payloads.ps1 `
             -OutputRoot windows/vendor/offline-payloads `
-            -CodexPlusPlusSetup windows/build/codex-plus-compat/CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe `
-            -CodexPlusPlusSource windows/build/codex-plus-compat/CodexPlusPlus-v1.2.43-codexkit.1-source.tar.gz
+            -CodexPlusPlusSetup windows/build/codex-plus-compat/CodexPlusPlus-1.2.44-codexkit.1-windows-x64-setup.exe `
+            -CodexPlusPlusSource windows/build/codex-plus-compat/CodexPlusPlus-v1.2.44-codexkit.1-source.tar.gz
       - name: Strict payload signatures and licenses
         id: payload
         shell: pwsh

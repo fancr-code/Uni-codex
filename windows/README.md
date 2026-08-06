@@ -81,14 +81,14 @@ Rust stable、NSIS 与 Inno Setup 7.0.2，并确保 `dotnet`、`node`、`cargo`�
 dotnet restore .\CodexOneClickInstaller.sln --locked-mode
 $compat = '.\build\codex-plus-compat'
 .\scripts\build-codex-plus-compatibility-payload.ps1 `
-  -Tag v1.2.43 `
-  -Patch ..\patches\CodexPlusPlus\v1.2.43-cross-provider-history.patch `
+  -Tag v1.2.44 `
+  -Patch ..\patches\CodexPlusPlus\v1.2.44-cross-provider-history.patch `
   -OutputRoot $compat
 
 .\scripts\refresh-offline-payloads.ps1 `
   -OutputRoot .\vendor\offline-payloads `
-  -CodexPlusPlusSetup "$compat\CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe" `
-  -CodexPlusPlusSource "$compat\CodexPlusPlus-v1.2.43-codexkit.1-source.tar.gz"
+  -CodexPlusPlusSetup "$compat\CodexPlusPlus-1.2.44-codexkit.1-windows-x64-setup.exe" `
+  -CodexPlusPlusSource "$compat\CodexPlusPlus-v1.2.44-codexkit.1-source.tar.gz"
 
 . .\scripts\offline-payload-supply.ps1
 $active = Resolve-ActivePayloadRoot (

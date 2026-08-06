@@ -11,8 +11,8 @@
   ],
   "components": {
     "codex-windows-x64": {"relativePath":"apps/Codex.msix","format":"msix"},
-    "codex-plus-plus-windows-x64": {"relativePath":"apps/CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe","format":"exe"},
-    "codex-plus-plus-source": {"relativePath":"sources/CodexPlusPlus-v1.2.43-codexkit.1-source.tar.gz","format":"archive"},
+    "codex-plus-plus-windows-x64": {"relativePath":"apps/CodexPlusPlus-1.2.44-codexkit.1-windows-x64-setup.exe","format":"exe"},
+    "codex-plus-plus-source": {"relativePath":"sources/CodexPlusPlus-v1.2.44-codexkit.1-source.tar.gz","format":"archive"},
     "model-catalog": {"relativePath":"model-catalog.json","format":"json"},
     "plugin-marketplaces": {"relativePath":"plugins","format":"directory"},
     "script-market": {"relativePath":"script-market","format":"directory"}
@@ -22,7 +22,7 @@
     "packageFamilyName": "OpenAI.Codex_2p2nqsd0c76g0"
   },
   "codexPlusPlus": {
-    "payloadVersion": "1.2.43+codexkit.1",
+    "payloadVersion": "1.2.44+codexkit.1",
     "architecture": "x64",
     "compatibilityRevision": "cross-provider-content-v1",
     "licenseID": "AGPL-3.0-only"

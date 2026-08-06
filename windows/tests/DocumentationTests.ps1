@@ -192,7 +192,7 @@ foreach ($entry in $developerDocs.GetEnumerator()) {
         'NSIS',
         'Inno Setup 7.0.2',
         'build-codex-plus-compatibility-payload.ps1',
-        'v1.2.43-cross-provider-history.patch',
+        'v1.2.44-cross-provider-history.patch',
         '-OutputRoot $compat',
         'refresh-offline-payloads.ps1',
         '-CodexPlusPlusSetup',
@@ -215,7 +215,7 @@ foreach ($entry in $developerDocs.GetEnumerator()) {
     ) "$($entry.Key) README passes the payload container directly"
 }
 foreach ($value in @(
-    '-Patch patches/CodexPlusPlus/v1.2.43-cross-provider-history.patch',
+    '-Patch patches/CodexPlusPlus/v1.2.44-cross-provider-history.patch',
     '-OutputRoot windows/vendor/offline-payloads',
     "GetFullPath('windows/vendor/offline-payloads')",
     '-BuiltRoot $compat'
@@ -223,7 +223,7 @@ foreach ($value in @(
     Assert-Contains $rootReadme $value 'root checkout-relative Windows chain'
 }
 foreach ($value in @(
-    '-Patch ..\patches\CodexPlusPlus\v1.2.43-cross-provider-history.patch',
+    '-Patch ..\patches\CodexPlusPlus\v1.2.44-cross-provider-history.patch',
     '-OutputRoot .\vendor\offline-payloads',
     "GetFullPath('.\vendor\offline-payloads')",
     '-TestResultsRoot .\test-results\full'

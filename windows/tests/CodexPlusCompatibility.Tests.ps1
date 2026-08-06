@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-Runs the Codex++ v1.2.43 cross-provider compatibility contract.
+Runs the Codex++ v1.2.44 cross-provider compatibility contract.
 
 .DESCRIPTION
 With no parameters, this script runs a hermetic fixture build. SourceArchive
@@ -33,17 +33,17 @@ $Builder = Join-Path (Join-Path $WindowsRoot 'scripts') `
 $PayloadLock = Join-Path (Join-Path $WindowsRoot 'vendor') 'payload-lock.json'
 $SharedFixture = Join-Path (Join-Path (Join-Path $RepositoryRoot 'tests') 'fixtures') `
     'codex-plus/cross_provider_content.rs'
-$ExpectedTag = 'v1.2.43'
-$ExpectedVersion = '1.2.43+codexkit.1'
+$ExpectedTag = 'v1.2.44'
+$ExpectedVersion = '1.2.44+codexkit.1'
 $ExpectedRevision = 'cross-provider-content-v1'
 $ExpectedPatchSha256 = `
-    '5a411571c2c950a3ce5f8b1ed3a72a0f42bb4c4de2f9ea3ba5de8d767e14f739'
+    '4a5d84b215ecf729b61a1b675d29af8f11dc3c86698edebbe03d0c732a53e15'
 $ExecutableMetadataMagic = 'CODEXKIT-EXECUTABLE-METADATA-V1:'
 $SetupProvenanceSchema = 'CODEXKIT-SETUP-PROVENANCE-V1'
 $SetupProvenanceMagic = "$SetupProvenanceSchema`:"
 $ExpectedInstallDir = '$LOCALAPPDATA\Programs\Codex++'
-$SetupName = 'CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe'
-$SourceName = 'CodexPlusPlus-v1.2.43-codexkit.1-source.tar.gz'
+$SetupName = 'CodexPlusPlus-1.2.44-codexkit.1-windows-x64-setup.exe'
+$SourceName = 'CodexPlusPlus-v1.2.44-codexkit.1-source.tar.gz'
 $TestRoot = Join-Path ([IO.Path]::GetTempPath()) `
     "codex-plus-compatibility-$([Guid]::NewGuid().ToString('N'))"
 
@@ -317,8 +317,8 @@ function Expand-SourceArchive([string] $Archive, [string] $Destination) {
     Invoke-Native $tar @('-xzf', $Archive, '-C', $Destination) $RepositoryRoot
     $roots = @(Get-ChildItem -LiteralPath $Destination -Directory -Force)
     Assert-True ($roots.Count -eq 1) 'source archive must have exactly one top-level directory'
-    Assert-True ($roots[0].Name -ceq 'CodexPlusPlus-1.2.43') `
-        'source archive top-level directory is not CodexPlusPlus-1.2.43'
+    Assert-True ($roots[0].Name -ceq 'CodexPlusPlus-1.2.44') `
+        'source archive top-level directory is not CodexPlusPlus-1.2.44'
     return $roots[0].FullName
 }
 
@@ -508,7 +508,7 @@ function New-FixtureSourceArchive(
     [string] $NsiVariant = 'Valid'
 ) {
     $fixtureParent = Join-Path $TestRoot 'fixture-source'
-    $root = Join-Path $fixtureParent 'CodexPlusPlus-1.2.43'
+    $root = Join-Path $fixtureParent 'CodexPlusPlus-1.2.44'
     $manager = Join-Path (Join-Path (Join-Path $root 'apps') 'codex-plus-manager') ''
     $managerTauri = Join-Path (Join-Path $manager 'src-tauri') 'src'
     $tests = Join-Path (Join-Path (Join-Path $root 'crates') 'codex-plus-core') 'tests'
@@ -528,10 +528,10 @@ pub fn run() {
 }
 '@
     Write-Utf8NoBom (Join-Path $manager 'package.json') @'
-{"name":"codex-plus-manager","version":"1.2.43","private":true,"scripts":{}}
+{"name":"codex-plus-manager","version":"1.2.44","private":true,"scripts":{}}
 '@
     Write-Utf8NoBom (Join-Path $manager 'package-lock.json') @'
-{"name":"codex-plus-manager","version":"1.2.43","lockfileVersion":3,"packages":{}}
+{"name":"codex-plus-manager","version":"1.2.44","lockfileVersion":3,"packages":{}}
 '@
     $nsiText = @'
 Unicode true
@@ -598,7 +598,7 @@ SectionEnd
     }
     Write-Utf8NoBom (Join-Path $installer 'CodexPlusPlus.nsi') $nsiText
     $tar = Get-TarCommand
-    Invoke-Native $tar @('-czf', $ArchivePath, 'CodexPlusPlus-1.2.43') $fixtureParent
+    Invoke-Native $tar @('-czf', $ArchivePath, 'CodexPlusPlus-1.2.44') $fixtureParent
 }
 
 function New-ToolShim([string] $Path, [string] $Body) {
@@ -616,7 +616,7 @@ if ($sourceIndex -lt 0 -or $sourceIndex + 1 -ge $Rest.Count) { exit 91 }
 $sourceRoot = $Rest[$sourceIndex + 1]
 $patchPath = $Rest[$Rest.Count - 1]
 $patchSha = (Get-FileHash -LiteralPath $patchPath -Algorithm SHA256).Hash.ToLowerInvariant()
-if ($patchSha -cne '5a411571c2c950a3ce5f8b1ed3a72a0f42bb4c4de2f9ea3ba5de8d767e14f739') {
+if ($patchSha -cne '4a5d84b215ecf729b61a1b675d29af8f11dc3c86698edebbe03d0c732a53e15') {
     exit 92
 }
 $patchText = Get-Content -LiteralPath $patchPath -Raw
@@ -740,7 +740,7 @@ function Invoke-ContractMode {
         "builder is missing: $Builder"
     $builderText = Get-Content -LiteralPath $Builder -Raw
     Assert-Contains $builderText `
-        '5612fbdc60244b9080823b596745c6e88f8cc5fa1996015b143b44ba6e51dd7f' `
+        '2c9a1900b24e838ed7b9405534be15efc81a670636cd97d4de8a16cab17a73cb' `
         'builder does not pin the reviewed upstream source archive SHA-256'
     Assert-Contains $builderText $ExpectedPatchSha256 `
         'builder does not pin the reviewed shared patch SHA-256'
@@ -755,7 +755,7 @@ function Invoke-ContractMode {
     Assert-Contains $builderText $SetupProvenanceSchema `
         'builder does not append the fixed setup provenance schema'
     $defaultPatch = Join-Path (Join-Path (Join-Path $RepositoryRoot 'patches') `
-        'CodexPlusPlus') 'v1.2.43-cross-provider-history.patch'
+        'CodexPlusPlus') 'v1.2.44-cross-provider-history.patch'
     Assert-PatchContract $defaultPatch
     $lock = Get-Content -LiteralPath $PayloadLock -Raw | ConvertFrom-Json
     Assert-True ($lock.codexPlusPlus.payloadVersion -ceq $ExpectedVersion) `
@@ -771,7 +771,7 @@ function Invoke-ContractMode {
         $lock.components.'codex-plus-plus-source'.relativePath -ceq
         "sources/$SourceName") 'payload lock source path is stale'
 
-    $archive = Join-Path $TestRoot 'CodexPlusPlus-v1.2.43-source.tar.gz'
+    $archive = Join-Path $TestRoot 'CodexPlusPlus-v1.2.44-source.tar.gz'
     $toolRoot = Join-Path $TestRoot 'tools'
     $output = Join-Path $TestRoot 'built'
     $capture = Join-Path $TestRoot 'commands.log'
@@ -866,7 +866,7 @@ function Invoke-ContractMode {
         'LICENSE',
         'CODEXKIT-PATCH.md',
         'CODEXKIT-BUILD-MANIFEST.json',
-        'patches/CodexPlusPlus/v1.2.43-cross-provider-history.patch'
+        'patches/CodexPlusPlus/v1.2.44-cross-provider-history.patch'
     )) {
         Assert-True (Test-Path -LiteralPath (Join-Path $sourceRoot $relative) -PathType Leaf) `
             "source archive omitted $relative"
@@ -971,7 +971,7 @@ function Invoke-ContractMode {
     } '*executable record differs from source manifest*' `
         'setup provenance validator accepted a tampered executable hash'
     $archivedPatch = Join-Path $sourceRoot `
-        'patches/CodexPlusPlus/v1.2.43-cross-provider-history.patch'
+        'patches/CodexPlusPlus/v1.2.44-cross-provider-history.patch'
     Assert-True ((Get-FileHash -LiteralPath $archivedPatch -Algorithm SHA256).Hash -ceq
         $ExpectedPatchSha256.ToUpperInvariant()) `
         'source archive patch is not byte-identical to the shared patch'
@@ -985,8 +985,8 @@ function Invoke-ContractMode {
         Join-Path $sourceRoot 'scripts/installer/windows/CodexPlusPlus.nsi') -Raw
     Assert-PerUserNsiContract $archivedNsi 'fixture archived NSIS source'
     foreach ($needle in @(
-        'VIProductVersion "1.2.43.1"',
-        'VIFileVersion "1.2.43.1"',
+        'VIProductVersion "1.2.44.1"',
+        'VIFileVersion "1.2.44.1"',
         'VIAddVersionKey "ProductVersion" "${VERSION}"',
         'VIAddVersionKey "FileVersion" "${VERSION}"',
         'VIAddVersionKey "CodexKitCompatibilityRevision" "cross-provider-content-v1"'
@@ -1073,7 +1073,7 @@ function Invoke-ContractMode {
     Assert-ThrowsLike {
         & $Builder -Tag 'v1.2.42' -Patch $defaultPatch -OutputRoot $wrongOutput `
             -SourceArchive $archive -TestMode -ToolRoot $toolRoot
-    } '*only fixed tag v1.2.43 is allowed*' 'builder accepted an unpinned tag'
+    } '*only fixed tag v1.2.44 is allowed*' 'builder accepted an unpinned tag'
     $tamperedPatch = Join-Path $TestRoot 'tampered.patch'
     Write-Utf8NoBom $tamperedPatch ((Get-Content -LiteralPath $defaultPatch -Raw) + "`n")
     Assert-ThrowsLike {
@@ -1201,7 +1201,7 @@ function Invoke-BuiltMode {
     }
     Assert-ExactPayloadChecksums $root
     $canonicalPatch = Join-Path (Join-Path (Join-Path $RepositoryRoot 'patches') `
-        'CodexPlusPlus') 'v1.2.43-cross-provider-history.patch'
+        'CodexPlusPlus') 'v1.2.44-cross-provider-history.patch'
     Assert-PatchContract $canonicalPatch
     $setup = Join-Path $root $SetupName
     $version = (Get-Item -LiteralPath $setup).VersionInfo
@@ -1313,13 +1313,13 @@ function Invoke-BuiltMode {
         'LICENSE',
         'CODEXKIT-PATCH.md',
         'CODEXKIT-BUILD-MANIFEST.json',
-        'patches/CodexPlusPlus/v1.2.43-cross-provider-history.patch'
+        'patches/CodexPlusPlus/v1.2.44-cross-provider-history.patch'
     )) {
         Assert-True (Test-Path -LiteralPath (Join-Path $sourceRoot $relative) -PathType Leaf) `
             "source archive omitted $relative"
     }
     $archivedPatch = Join-Path $sourceRoot `
-        'patches/CodexPlusPlus/v1.2.43-cross-provider-history.patch'
+        'patches/CodexPlusPlus/v1.2.44-cross-provider-history.patch'
     $archivedPatchSha = (Get-FileHash -LiteralPath $archivedPatch `
         -Algorithm SHA256).Hash.ToLowerInvariant()
     Assert-True ($archivedPatchSha -ceq $ExpectedPatchSha256) `

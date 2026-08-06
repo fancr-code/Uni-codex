@@ -24,6 +24,20 @@ class OnlineReleaseContractTests(unittest.TestCase):
         self.assertIn("BigPizzaV3/CodexPlusPlus", script)
         self.assertNotIn("agentsmirror", script)
         self.assertIn("codesign", script)
+        self.assertIn("codex-plus-plus", script)
+        self.assertIn("BUNDLED_CODEX_PLUS_DMG", script)
+
+    def test_macos_online_dmg_stages_both_codex_plus_architectures(self):
+        builder = (ROOT / "macos" / "online" / "build-online-dmg.sh").read_text(
+            encoding="utf-8"
+        )
+        workflow = (ROOT / ".github" / "workflows" / "online-release.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("CodexPlusPlusArmDmg", workflow)
+        self.assertIn("CodexPlusPlusX64Dmg", workflow)
+        self.assertIn("codex-plus-plus/CodexPlusPlus-arm64.dmg", builder)
+        self.assertIn("codex-plus-plus/CodexPlusPlus-x64.dmg", builder)
 
     def test_release_workflow_builds_both_platform_assets(self):
         workflow = (ROOT / ".github" / "workflows" / "online-release.yml").read_text(

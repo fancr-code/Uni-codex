@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PATCH_FILE="$ROOT/patches/CodexPlusPlus/v1.2.43-cross-provider-history.patch"
-DEFAULT_ARCHIVE="$ROOT/vendor/offline-payloads/sources/CodexPlusPlus-v1.2.43.tar.gz"
+PATCH_FILE="$ROOT/patches/CodexPlusPlus/v1.2.44-cross-provider-history.patch"
+DEFAULT_ARCHIVE="$ROOT/vendor/offline-payloads/sources/CodexPlusPlus-v1.2.44.tar.gz"
 TEMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/codex-plus-compatibility-tests.XXXXXX")"
 trap 'rm -rf "$TEMP_ROOT"' EXIT
 

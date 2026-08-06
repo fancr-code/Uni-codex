@@ -543,7 +543,7 @@ try {
         $sources.codexStoreProductId -cne '9PLM9XGG6VKS' -or
         $sources.codexStoreListingURL -cne
             'https://apps.microsoft.com/detail/9PLM9XGG6VKS' -or
-        $sources.codexPlusPlusTag -cne 'v1.2.43' -or
+        $sources.codexPlusPlusTag -cne 'v1.2.44' -or
         $sources.scriptMarketCommit -cne 'b3c1d16d7d75145b9cf5b0e34000316436d905dd') {
         Fail 'upstream source or payload lock is not the approved schema-2 lock'
     }
@@ -554,8 +554,8 @@ try {
     if ((Split-Path -Leaf $CodexPlusPlusSetup) -cnotmatch
         '^CodexPlusPlus-1\.2\.43-codexkit\.1-windows-x64-setup\.exe$' -or
         (Split-Path -Leaf $CodexPlusPlusSource) -cnotmatch
-        '^CodexPlusPlus-v1\.2\.43-codexkit\.1-source\.tar\.gz$') {
-        Fail 'Codex++ inputs are not the exact Task 3 v1.2.43+codexkit.1 artifacts'
+        '^CodexPlusPlus-v1\.2\.44-codexkit\.1-source\.tar\.gz$') {
+        Fail 'Codex++ inputs are not the exact Task 3 v1.2.44+codexkit.1 artifacts'
     }
 
     New-Item -ItemType Directory -Path $OutputParent, $StageRoot, $WorkRoot -Force | Out-Null
@@ -602,8 +602,8 @@ try {
         $dependencyIndex++
     }
 
-    $cppRelative = 'apps/CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe'
-    $sourceRelative = 'sources/CodexPlusPlus-v1.2.43-codexkit.1-source.tar.gz'
+    $cppRelative = 'apps/CodexPlusPlus-1.2.44-codexkit.1-windows-x64-setup.exe'
+    $sourceRelative = 'sources/CodexPlusPlus-v1.2.44-codexkit.1-source.tar.gz'
     Copy-Item -LiteralPath $CodexPlusPlusSetup -Destination (Join-Path $StageRoot $cppRelative)
     Copy-Item -LiteralPath $CodexPlusPlusSource -Destination (Join-Path $StageRoot $sourceRelative)
 
@@ -644,12 +644,12 @@ try {
             packageName = $identity.Name
         }))
     foreach ($entry in $dependencyEntries) { $entries.Add($entry) }
-    $entries.Add((New-PayloadEntry 'codex-plus-plus-windows-x64' '1.2.43+codexkit.1' 'x64' `
+    $entries.Add((New-PayloadEntry 'codex-plus-plus-windows-x64' '1.2.44+codexkit.1' 'x64' `
         $cppRelative $sources.codexPlusPlusSource 'exe' @{
             compatibilityRevision = 'cross-provider-content-v1'; licenseID = 'AGPL-3.0-only'
             authenticodePolicy = 'unsigned'
         }))
-    $entries.Add((New-PayloadEntry 'codex-plus-plus-source' '1.2.43+codexkit.1' 'source' `
+    $entries.Add((New-PayloadEntry 'codex-plus-plus-source' '1.2.44+codexkit.1' 'source' `
         $sourceRelative $sources.codexPlusPlusSource 'archive' @{
             compatibilityRevision = 'cross-provider-content-v1'; licenseID = 'AGPL-3.0-only'
         }))
