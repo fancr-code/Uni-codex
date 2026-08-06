@@ -183,6 +183,12 @@ compile_gui x86_64 x86_64-apple-macos14.0
 /bin/cp -cR "$PAYLOAD_ROOT" "$RESOURCES_DIR/offline-payloads" \
   || die "unable to clone offline payloads into the app bundle"
 /bin/cp "$ROOT/Resources/installer-core.sh" "$RESOURCES_DIR/installer-core.sh"
+/bin/cp "$ROOT/scripts/install-skill-collections.sh" "$RESOURCES_DIR/install-skill-collections.sh"
+/bin/cp "$ROOT/skills/collections.json" "$RESOURCES_DIR/skill-collections.json"
+UNICODEX_SKILL_MANIFEST="$ROOT/skills/collections.json" \
+  UNICODEX_SKILL_DESTINATION="$RESOURCES_DIR/skill-collections" \
+  UNICODEX_SKILL_PREPARE_BUNDLE=1 \
+  "$ROOT/scripts/install-skill-collections.sh"
 /bin/cp "$PAYLOAD_ROOT/model-catalog.json" "$RESOURCES_DIR/model-catalog.json"
 /bin/cp "$ROOT/Resources/plugin-catalog.json" "$RESOURCES_DIR/plugin-catalog.json"
 /bin/mkdir -p "$RESOURCES_DIR/CodexPlusPlus-Compatibility"
@@ -192,7 +198,7 @@ compile_gui x86_64 x86_64-apple-macos14.0
   > "$RESOURCES_DIR/CodexPlusPlus-Compatibility/CODEXKIT-PATCH.md"
 /usr/bin/ditto "$ROOT/Resources/guides" "$RESOURCES_DIR/guides"
 /usr/bin/ditto "$ROOT/Resources/licenses" "$RESOURCES_DIR/licenses"
-/bin/chmod 755 "$MACOS_DIR/CodexOneClickInstaller" "$RESOURCES_DIR/installer-support" "$RESOURCES_DIR/installer-core.sh"
+/bin/chmod 755 "$MACOS_DIR/CodexOneClickInstaller" "$RESOURCES_DIR/installer-support" "$RESOURCES_DIR/installer-core.sh" "$RESOURCES_DIR/install-skill-collections.sh"
 /usr/bin/plutil -lint "$CONTENTS/Info.plist" >/dev/null
 
 architectures="$(/usr/bin/lipo -archs "$MACOS_DIR/CodexOneClickInstaller")"

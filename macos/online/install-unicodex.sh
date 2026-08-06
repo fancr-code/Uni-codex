@@ -90,4 +90,9 @@ for app_name in 'Codex++.app' 'Codex++ 管理工具.app'; do
 done
 /usr/bin/hdiutil detach "$codex_plus_mount" >/dev/null
 
+printf '正在安装科研技能合集…\n'
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+UNICODEX_SKILL_MANIFEST="$script_dir/skills/collections.json" \
+  "$script_dir/install-skill-collections.sh"
+
 printf 'Uni-codex 安装完成。\n'

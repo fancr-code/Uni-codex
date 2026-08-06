@@ -34,6 +34,9 @@ Source: "{#StageRoot}\app\*"; DestDir: "{code:GetContentDestination|app}"; Flags
 Source: "{#StageRoot}\offline-payloads\*"; DestDir: "{code:GetContentDestination|offline-payloads}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#StageRoot}\guides\*"; DestDir: "{code:GetContentDestination|guides}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#StageRoot}\licenses\*"; DestDir: "{code:GetContentDestination|licenses}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#StageRoot}\skill-collections\*"; DestDir: "{code:GetContentDestination|skill-collections}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#StageRoot}\Install-SkillCollections.ps1"; DestDir: "{code:GetContentDestination|skills-installer}"; Flags: ignoreversion
+Source: "{#StageRoot}\skill-collections.json"; DestDir: "{code:GetContentDestination|skills-installer}"; Flags: ignoreversion
 
 [Code]
 var
@@ -108,7 +111,17 @@ begin
   if not Exec(Executable, Parameters, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode) then
     WpfExitCode := 3
   else if ResultCode = 0 then
-    WpfExitCode := 0
+  begin
+    Parameters := '-NoProfile -ExecutionPolicy Bypass -File "' +
+      ExpandConstant('{code:GetContentDestination|skills-installer}\Install-SkillCollections.ps1') +
+      '" -ManifestPath "' + ExpandConstant('{code:GetContentDestination|skills-installer}\skill-collections.json') +
+      '" -BundleRoot "' + ExpandConstant('{code:GetContentDestination|skill-collections}') + '"';
+    if Exec(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'), Parameters, '',
+      SW_HIDE, ewWaitUntilTerminated, ResultCode) and (ResultCode = 0) then
+      WpfExitCode := 0
+    else
+      WpfExitCode := 3;
+  end
   else if ResultCode = 2 then
     WpfExitCode := 2
   else

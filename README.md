@@ -53,6 +53,7 @@
 
 - **Codex 桌面版**：由官方来源下载，不在本仓库重复打包。
 - **Codex++**：随引导流程安装，减少手动配置步骤。
+- **211 个科研 Skills**：在线版与离线版都预装 Nature Skills、Scientific Agent Skills 和 Research Skills。
 - **跨平台支持**：一个项目同时覆盖 Windows 和 macOS。
 - **已有安装保护**：检测到健康的 Codex 时优先复用，避免无意义地重复安装或降级。
 - **更适合中文用户**：下载入口、安装说明和常见问题集中在同一页面。
@@ -68,6 +69,17 @@ Uni-codex 也可以配合以下工具形成连续科研工作流：
 - Codex / Codex++：执行代码、文档、数据处理与自动化任务。
 
 这些功能均为可选项。只想安装 Codex 的用户，直接使用上方安装包即可。
+
+### 开箱即用的科研 Skills
+
+安装完成后，Codex 会自动获得三套经过固定版本管理的开源技能合集：
+
+- [Nature Skills](https://github.com/Yuan1z0825/nature-skills)：Nature 风格论文写作、润色、审稿、作图和投稿工作流，共 19 个技能。
+- [Scientific Agent Skills](https://github.com/K-Dense-AI/scientific-agent-skills)：覆盖生物、化学、医学、数据分析和科研数据库等场景，共 158 个技能。
+- [Research Skills](https://github.com/neuromechanist/research-skills)：研究规划、实验设计、文献与图表处理、工程化研究流程，共 34 个技能。
+
+三套合集合计 **211 个技能**。在线安装包在安装时获取锁定版本；离线安装包在构建时已将同一版本完整打包。安装器会保留用户自己维护的同名技能，不会静默覆盖。
+三套合集的 MIT 许可证会随技能一并保留在 `.codex/skills/.uni-codex-licenses/`。
 
 ## 常见问题
 

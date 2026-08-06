@@ -118,10 +118,21 @@ function Install-CodexPlusPlus {
     if ($process.ExitCode -ne 0) { throw "Codex++ installer failed: $($process.ExitCode)" }
 }
 
+function Install-SkillCollections {
+    $installer = Join-Path $PSScriptRoot 'Install-SkillCollections.ps1'
+    $manifest = Join-Path $PSScriptRoot 'skills/collections.json'
+    if (-not (Test-Path -LiteralPath $installer) -or -not (Test-Path -LiteralPath $manifest)) {
+        throw 'Uni-codex skill collection resources are missing'
+    }
+    Write-Step 'Installing Nature, scientific-agent, and research skills'
+    & $installer -ManifestPath $manifest
+}
+
 try {
     New-Item -ItemType Directory -Path $WorkRoot -Force | Out-Null
     Install-CodexDesktop
     Install-CodexPlusPlus
+    Install-SkillCollections
     Write-Step 'Uni-codex installation completed'
 } finally {
     if (Test-Path -LiteralPath $WorkRoot) {

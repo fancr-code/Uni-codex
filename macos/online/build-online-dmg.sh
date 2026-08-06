@@ -8,12 +8,17 @@ trap '/bin/rm -rf "$STAGE"' EXIT
 
 /bin/mkdir -p "$OUTPUT"
 /bin/cp "$ROOT/install-unicodex.sh" "$STAGE/安装 Uni-codex.command"
+/bin/cp "$ROOT/../../scripts/install-skill-collections.sh" "$STAGE/install-skill-collections.sh"
+/bin/mkdir -p "$STAGE/skills"
+/bin/cp "$ROOT/../../skills/collections.json" "$STAGE/skills/collections.json"
 /bin/chmod 755 "$STAGE/安装 Uni-codex.command"
-/usr/bin/ditto "$ROOT/../../LICENSE" "$STAGE/LICENSE.txt"
+/bin/chmod 755 "$STAGE/install-skill-collections.sh"
+if [[ -f "$ROOT/../../LICENSE" ]]; then
+  /usr/bin/ditto "$ROOT/../../LICENSE" "$STAGE/LICENSE.txt"
+fi
 /usr/bin/hdiutil create -quiet -volname 'Uni-codex Online Installer' \
   -srcfolder "$STAGE" -format UDZO "$OUTPUT/Uni-codex-macOS-Online.dmg"
 (
   cd "$OUTPUT"
   /usr/bin/shasum -a 256 'Uni-codex-macOS-Online.dmg' > 'SHA256SUMS-macOS.txt'
 )
-
