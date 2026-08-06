@@ -9,6 +9,28 @@
       "pinnedURL": "https://raw.githubusercontent.com/hL091015/CodexPlusPlusScriptMarket/482076e76af9c78f18e3998bd99a96dc6033eb5d/scripts/zh_CN%E6%B1%89%E5%8C%96.user.js",
       "pinnedSHA256": "be19a7930116dfe8fa1c68571d6a3bb3130714f77c7e32a6c1da543a182270f5",
       "sourceCommit": "482076e76af9c78f18e3998bd99a96dc6033eb5d"
+    },
+    {
+      "mode": "managed",
+      "id": "codex-context-used-meter",
+      "upstreamURL": "https://raw.githubusercontent.com/BigPizzaV3/CodexPlusPlusScriptMarket/main/scripts/codex-context-used-meter.js",
+      "upstreamSHA256": "d2a5efe42d88d9b706b8ca8799947d2bc31c1b608b30c2673ac36fa0050911ab",
+      "managedSource": "script-market-sources/codex-context-used-meter.js",
+      "managedURL": "https://raw.githubusercontent.com/fancr-code/Uni-codex/8f47a2b20bc7fd16b771ca51d5e409219f0fd7df/Resources/script-market-sources/codex-context-used-meter.js",
+      "managedSHA256": "7d1f79dd2f379bf25787ed1fc65778266fd286cd33966692708f985fe3adba7d",
+      "sourceCommit": "8f47a2b20bc7fd16b771ca51d5e409219f0fd7df",
+      "provenance": "codex-context-meter-v101"
+    },
+    {
+      "mode": "managed",
+      "id": "codex-token-usage",
+      "upstreamURL": "https://raw.githubusercontent.com/BigPizzaV3/CodexPlusPlusScriptMarket/main/scripts/codex-token-usage.js",
+      "upstreamSHA256": "03808d22f53da374837227636ebd9f1ba593fe5aba6219e90e636d7ed7c806eb",
+      "managedSource": "script-market-sources/codex-token-usage.js",
+      "managedURL": "https://raw.githubusercontent.com/fancr-code/Uni-codex/8f47a2b20bc7fd16b771ca51d5e409219f0fd7df/Resources/script-market-sources/codex-token-usage.js",
+      "managedSHA256": "bf233607f8e60f56b3c68d29c15bbd5ed5d7582fc488380f56b8d2f553bb4ddd",
+      "sourceCommit": "8f47a2b20bc7fd16b771ca51d5e409219f0fd7df",
+      "provenance": "codex-token-usage-dedupe-v1"
     }
   ]
 }
