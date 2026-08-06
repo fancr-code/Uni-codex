@@ -4,5 +4,6 @@
 windows/tests/fixtures/payload-root/** -text
 windows/tests/fixtures/payload-manifest.*.json -text
 windows/tests/fixtures/end-to-end/script-market/** -text
+Resources/script-market-sources/** -text
 windows/vendor/plugin-seeds/** -text
 patches/CodexPlusPlus/*.patch -text

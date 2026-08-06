@@ -51,8 +51,13 @@ jobs:
       - name: Download Codex++ Windows installer
         id: cpp
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          $release = Invoke-RestMethod -Headers @{'User-Agent'='Uni-codex'} -Uri 'https://api.github.com/repos/BigPizzaV3/CodexPlusPlus/releases/latest'
+          $release = Invoke-RestMethod -Headers @{
+            'User-Agent'='Uni-codex'
+            'Authorization'="Bearer $env:GH_TOKEN"
+          } -Uri 'https://api.github.com/repos/BigPizzaV3/CodexPlusPlus/releases/latest'
           $asset = @($release.assets | Where-Object name -match 'windows-x64-setup\.exe$')
           if ($asset.Count -ne 1) { throw 'Codex++ Windows asset missing or ambiguous' }
           $path = Join-Path $env:RUNNER_TEMP $asset[0].name
@@ -77,10 +82,13 @@ jobs:
       - uses: actions/checkout@v6
       - name: Download Codex++ macOS installers
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           release_json="$RUNNER_TEMP/codex-plus.json"
           curl --fail --location --retry 3 --connect-timeout 20 --max-time 1800 \
             -H 'User-Agent: Uni-codex' \
+            -H "Authorization: Bearer $GH_TOKEN" \
             'https://api.github.com/repos/BigPizzaV3/CodexPlusPlus/releases/latest' \
             -o "$release_json"
           python3 - "$release_json" "$RUNNER_TEMP" <<'PY'
