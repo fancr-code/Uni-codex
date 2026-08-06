@@ -37,7 +37,7 @@ $ExpectedTag = 'v1.2.44'
 $ExpectedVersion = '1.2.44+codexkit.1'
 $ExpectedRevision = 'cross-provider-content-v1'
 $ExpectedPatchSha256 = `
-    '4a5d84b215ecf729b61a1b675d29af8f11dc3c86698edebbe03d0c732a53e15'
+    '4a5d84b215ecf729b61a1b675d29af8f11dc3c86698edeebbe03d0c732a53e15'
 $ExecutableMetadataMagic = 'CODEXKIT-EXECUTABLE-METADATA-V1:'
 $SetupProvenanceSchema = 'CODEXKIT-SETUP-PROVENANCE-V1'
 $SetupProvenanceMagic = "$SetupProvenanceSchema`:"
@@ -616,7 +616,7 @@ if ($sourceIndex -lt 0 -or $sourceIndex + 1 -ge $Rest.Count) { exit 91 }
 $sourceRoot = $Rest[$sourceIndex + 1]
 $patchPath = $Rest[$Rest.Count - 1]
 $patchSha = (Get-FileHash -LiteralPath $patchPath -Algorithm SHA256).Hash.ToLowerInvariant()
-if ($patchSha -cne '4a5d84b215ecf729b61a1b675d29af8f11dc3c86698edebbe03d0c732a53e15') {
+if ($patchSha -cne '4a5d84b215ecf729b61a1b675d29af8f11dc3c86698edeebbe03d0c732a53e15') {
     exit 92
 }
 $patchText = Get-Content -LiteralPath $patchPath -Raw

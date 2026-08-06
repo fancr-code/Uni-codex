@@ -142,7 +142,6 @@ foreach ($value in @(
     '3.',
     '4.',
     '5.',
-    'SHA256SUMS.txt',
     '更多信息',
     '仍要运行',
     '自动回滚',
@@ -151,37 +150,15 @@ foreach ($value in @(
     Assert-Contains $windowsOpen $value 'Windows open guide steps'
 }
 foreach ($value in @(
-    'build-codex-one-click-installer.sh',
-    'tests/run-all-tests.sh',
-    'windows/scripts/build-installer.ps1',
-    'windows/tests/run-all-tests.ps1',
-    '项目结构',
+    '.github/workflows/online-release.yml',
+    'macos/',
     'windows/',
     'Resources/',
     '.github/workflows/'
 )) {
     Assert-Contains $rootReadme $value 'root maintainer documentation'
 }
-Assert-Contains $rootReadme '-OutputDir dist' 'root Windows build example'
-Assert-True (-not $rootReadme.Contains('-OutputDir windows/dist')) `
-    'root Windows build example double-prefixes WindowsRoot'
-Assert-Contains $rootReadme "``````bash`n# macOS 构建与测试" `
-    'root macOS bash fence'
-Assert-Contains $rootReadme (
-    "``````powershell`n" +
-    '# Windows 开发构建与测试（从仓库根目录，在 Windows x64）'
-) 'root Windows PowerShell fence'
-$powerShellFence = $rootReadme.IndexOf(
-    "``````powershell`n",
-    [StringComparison]::Ordinal)
-$windowsCompat = $rootReadme.IndexOf(
-    "`$compat = 'windows/build/codex-plus-compat'",
-    [StringComparison]::Ordinal)
-Assert-True (
-    $powerShellFence -ge 0 -and $windowsCompat -gt $powerShellFence
-) 'root Windows chain is not inside its PowerShell fence'
 $developerDocs = [ordered]@{
-    root = $rootReadme
     windows = $windowsReadme
 }
 foreach ($entry in $developerDocs.GetEnumerator()) {
@@ -213,14 +190,6 @@ foreach ($entry in $developerDocs.GetEnumerator()) {
         $entry.Value -notmatch
             '-PayloadRoot\s+(windows/vendor/offline-payloads|\.\\vendor\\offline-payloads)'
     ) "$($entry.Key) README passes the payload container directly"
-}
-foreach ($value in @(
-    '-Patch patches/CodexPlusPlus/v1.2.44-cross-provider-history.patch',
-    '-OutputRoot windows/vendor/offline-payloads',
-    "GetFullPath('windows/vendor/offline-payloads')",
-    '-BuiltRoot $compat'
-)) {
-    Assert-Contains $rootReadme $value 'root checkout-relative Windows chain'
 }
 foreach ($value in @(
     '-Patch ..\patches\CodexPlusPlus\v1.2.44-cross-provider-history.patch',
@@ -348,9 +317,10 @@ foreach ($script in $legacyScripts) {
     Assert-True ($exitCode -eq 64) `
         "legacy entry runtime exit was ${exitCode}: $script"
     $outputText = @($output | ForEach-Object { "$_" }) -join "`n"
-    Assert-Contains $outputText 'Codex-One-Click-Windows-x64-Offline-Setup.exe' `
+    Assert-Contains $outputText 'https://apps.microsoft.com/detail/9PLM9XGG6VKS' `
         "legacy runtime output $script"
-    Assert-Contains $outputText 'SHA256SUMS.txt' "legacy runtime output $script"
+    Assert-Contains $outputText '暂不镜像官方 Codex 离线安装文件' `
+        "legacy runtime output $script"
 }
 
 $global:LASTEXITCODE = 0

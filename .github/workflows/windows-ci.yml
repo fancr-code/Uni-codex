@@ -70,12 +70,14 @@ jobs:
               }).Count -ne 1) { throw "NSIS makensis.exe must report exact version v3.12" }
           $root >> $env:GITHUB_PATH
       - name: Core full serialized tests
+        timeout-minutes: 15
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path test-results/core -Force | Out-Null
           dotnet test windows/tests/CodexOneClick.Core.Tests/CodexOneClick.Core.Tests.csproj `
             -c Release --no-restore `
             -m:1 -p:TestTfmsInParallel=false `
+            --blame-hang --blame-hang-timeout 2m `
             --logger "trx;LogFileName=core-targeted.trx" `
             --results-directory test-results/core
       - name: WPF startup, view-model, and layout tests
@@ -139,7 +141,7 @@ jobs:
           name: windows-pr-test-evidence
           if-no-files-found: error
           path: |
-            test-results/core/*.trx
+            test-results/core/**
             test-results/layout/*.trx
             test-results/layout/screenshots/*.png
             test-results/runtime/*.json

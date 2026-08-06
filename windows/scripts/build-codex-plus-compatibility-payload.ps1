@@ -39,7 +39,7 @@ $ExpectedTag = 'v1.2.44'
 $ExpectedSourceArchiveSha256 = `
     '2c9a1900b24e838ed7b9405534be15efc81a670636cd97d4de8a16cab17a73cb'
 $ExpectedPatchSha256 = `
-    '4a5d84b215ecf729b61a1b675d29af8f11dc3c86698edebbe03d0c732a53e15'
+    '4a5d84b215ecf729b61a1b675d29af8f11dc3c86698edeebbe03d0c732a53e15'
 $UpstreamVersion = '1.2.44'
 $PatchRevision = 'codexkit.1'
 $PayloadVersion = '1.2.44+codexkit.1'

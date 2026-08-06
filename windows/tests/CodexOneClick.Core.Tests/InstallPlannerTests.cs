@@ -95,7 +95,7 @@ public sealed class InstallPlannerTests
     [Fact]
     public void Matching_codex_plus_plus_version_is_preserved()
     {
-        var installed = InstalledCodexPlusPlus("1.2.43+codexkit.1");
+        var installed = InstalledCodexPlusPlus("1.2.44+codexkit.1");
 
         var plan = Plan(installed);
 
@@ -110,7 +110,7 @@ public sealed class InstallPlannerTests
     [Fact]
     public void Older_codex_plus_plus_version_is_upgraded()
     {
-        var installed = InstalledCodexPlusPlus("1.2.42");
+        var installed = InstalledCodexPlusPlus("1.2.43+codexkit.1");
 
         var plan = Plan(installed);
 
@@ -125,8 +125,8 @@ public sealed class InstallPlannerTests
     [Theory]
     [InlineData("unknown")]
     [InlineData("1.2")]
-    [InlineData("1.2.43+other.9")]
-    [InlineData("1.2.43+codexkit.x")]
+    [InlineData("1.2.44+other.9")]
+    [InlineData("1.2.44+codexkit.x")]
     public void Malformed_codex_plus_plus_version_is_repaired(string version)
     {
         var installed = InstalledCodexPlusPlus(version);
@@ -143,11 +143,11 @@ public sealed class InstallPlannerTests
 
     [Theory]
     [InlineData(
-        "1.2.43+codexkit.2",
+        "1.2.44+codexkit.2",
         PlanAction.Preserve,
         InstallReasonCodes.CodexPlusPlusNewer)]
     [InlineData(
-        "1.2.43+codexkit.0",
+        "1.2.44+codexkit.0",
         PlanAction.Upgrade,
         InstallReasonCodes.CodexPlusPlusOutdated)]
     public void Codexkit_revision_participates_in_version_ordering(
@@ -223,10 +223,10 @@ public sealed class InstallPlannerTests
     public void Duplicate_codex_plus_plus_records_choose_current_regardless_of_order()
     {
         var damagedCurrent = InstalledCodexPlusPlus(
-            "1.2.43+codexkit.1",
+            "1.2.44+codexkit.1",
             signatureValid: false);
-        var healthyOlder = InstalledCodexPlusPlus("1.2.43+codexkit.0");
-        var healthyCurrent = InstalledCodexPlusPlus("1.2.43+codexkit.1");
+        var healthyOlder = InstalledCodexPlusPlus("1.2.44+codexkit.0");
+        var healthyCurrent = InstalledCodexPlusPlus("1.2.44+codexkit.1");
 
         var forward = Plan(damagedCurrent, healthyOlder, healthyCurrent);
         var reversed = Plan(healthyCurrent, healthyOlder, damagedCurrent);
@@ -243,8 +243,8 @@ public sealed class InstallPlannerTests
     [Fact]
     public void Duplicate_codex_plus_plus_records_choose_highest_valid_version()
     {
-        var older = InstalledCodexPlusPlus("1.2.43+codexkit.0");
-        var newer = InstalledCodexPlusPlus("1.2.43+codexkit.2");
+        var older = InstalledCodexPlusPlus("1.2.44+codexkit.0");
+        var newer = InstalledCodexPlusPlus("1.2.44+codexkit.2");
 
         var forward = Plan(older, newer);
         var reversed = Plan(newer, older);
@@ -316,11 +316,11 @@ public sealed class InstallPlannerTests
                     PreflightService.CodexPackageFamilyName),
                 Entry(
                     "codex-plus-plus-windows-x64",
-                    "1.2.43+codexkit.1",
+                    "1.2.44+codexkit.1",
                     packageFamilyName: null),
                 Entry(
                     "codex-plus-plus-source",
-                    "1.2.43+codexkit.1",
+                    "1.2.44+codexkit.1",
                     packageFamilyName: null)
             ]);
 

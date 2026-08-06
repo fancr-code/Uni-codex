@@ -10,6 +10,8 @@ public sealed class PayloadCatalogService
 {
     private const string ExpectedPackageFamily = "OpenAI.Codex_2p2nqsd0c76g0";
     private const string ExpectedCompatibilityRevision = "cross-provider-content-v1";
+    private const string ExpectedCodexPlusPlusPayloadVersion = "1.2.44+codexkit.1";
+    private const string ExpectedCodexPlusPlusArtifactVersion = "1.2.44-codexkit.1";
     private const string ExpectedScriptCommit = "b3c1d16d7d75145b9cf5b0e34000316436d905dd";
     private const string ExpectedScriptIndexSha =
         "0776ecee1165babd3794fa3a740433b5326549bc8c5d8546aa4f8bb52374d540";
@@ -75,9 +77,9 @@ public sealed class PayloadCatalogService
         {
             ["codex-windows-x64"] = new("apps/Codex.msix", "msix"),
             ["codex-plus-plus-windows-x64"] = new(
-                "apps/CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe", "exe"),
+                $"apps/CodexPlusPlus-{ExpectedCodexPlusPlusArtifactVersion}-windows-x64-setup.exe", "exe"),
             ["codex-plus-plus-source"] = new(
-                "sources/CodexPlusPlus-v1.2.43-codexkit.1-source.tar.gz", "archive"),
+                $"sources/CodexPlusPlus-v{ExpectedCodexPlusPlusArtifactVersion}-source.tar.gz", "archive"),
             ["model-catalog"] = new("model-catalog.json", "json"),
             ["plugin-marketplaces"] = new("plugins", "directory"),
             ["script-market"] = new("script-market", "directory")
@@ -87,9 +89,9 @@ public sealed class PayloadCatalogService
         {
             ["codex-windows-x64"] = new("apps/Codex.msix", "msix"),
             ["codex-plus-plus-windows-x64"] = new(
-                "apps/CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe", "exe"),
+                $"apps/CodexPlusPlus-{ExpectedCodexPlusPlusArtifactVersion}-windows-x64-setup.exe", "exe"),
             ["codex-plus-plus-source"] = new(
-                "sources/CodexPlusPlus-v1.2.43-codexkit.1-source.tar.gz", "archive"),
+                $"sources/CodexPlusPlus-v{ExpectedCodexPlusPlusArtifactVersion}-source.tar.gz", "archive"),
             ["model-catalog"] = new("model-catalog.json", "json"),
             ["plugin-marketplaces"] = new("plugins", "directory"),
             ["script-market"] = new("script-market", "directory")
@@ -308,7 +310,7 @@ public sealed class PayloadCatalogService
                     || RequiredString(cpp, "compatibilityRevision")
                         != ExpectedCompatibilityRevision
                     || RequiredString(cpp, "licenseID") != "AGPL-3.0-only"
-                    || cppVersion != "1.2.43+codexkit.1")
+                    || cppVersion != ExpectedCodexPlusPlusPayloadVersion)
                     throw Invalid("Codex++ lock rule differs from compiled policy");
 
                 var plugins = ReadPluginSet(value);

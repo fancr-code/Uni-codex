@@ -245,7 +245,7 @@ public sealed class InstallerEngineTests : IDisposable
             DeepSeekRequest(),
             new Progress<InstallerEvent>(_ => { }),
             cancellation.Token);
-        await entered.Task;
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
         cancellation.Cancel();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => install);

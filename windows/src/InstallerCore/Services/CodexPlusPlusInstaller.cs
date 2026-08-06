@@ -130,18 +130,18 @@ public interface ICodexPlusPlusInstallationProbe
 
 public sealed class CodexPlusPlusInstaller
 {
-    public const string PayloadVersion = "1.2.43+codexkit.1";
+    public const string PayloadVersion = "1.2.44+codexkit.1";
     public const string CompatibilityRevision = "cross-provider-content-v1";
-    public const string UpstreamTag = "v1.2.43";
+    public const string UpstreamTag = "v1.2.44";
     public const string PatchSha256 =
-        "5a411571c2c950a3ce5f8b1ed3a72a0f42bb4c4de2f9ea3ba5de8d767e14f739";
+        "4a5d84b215ecf729b61a1b675d29af8f11dc3c86698edeebbe03d0c732a53e15";
     public const string SetupProvenanceSchema =
         "CODEXKIT-SETUP-PROVENANCE-V1";
     public const string SetupFileName =
-        "CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe";
+        "CodexPlusPlus-1.2.44-codexkit.1-windows-x64-setup.exe";
     private const string PayloadId = "codex-plus-plus-windows-x64";
     private const string CanonicalRelativePath =
-        "apps/CodexPlusPlus-1.2.43-codexkit.1-windows-x64-setup.exe";
+        "apps/CodexPlusPlus-1.2.44-codexkit.1-windows-x64-setup.exe";
 
     private readonly string _payloadRoot;
     private readonly string _installRoot;
