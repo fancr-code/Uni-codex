@@ -310,7 +310,24 @@ function Get-PackagePublisherId([string] $Publisher) {
 function Expand-AppxArchive([string] $PackagePath, [string] $Destination) {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     New-Item -ItemType Directory -Path $Destination -Force | Out-Null
-    [IO.Compression.ZipFile]::ExtractToDirectory($PackagePath, $Destination)
+    try {
+        [IO.Compression.ZipFile]::ExtractToDirectory($PackagePath, $Destination)
+    } catch {
+        # Some official MSIX files contain valid entries whose expanded
+        # paths exceed the Windows PowerShell/.NET MAX_PATH limit.  The
+        # inbox tar implementation handles those UTF-8 paths correctly.
+        $tar = Get-Command tar.exe -CommandType Application -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+        if ($null -eq $tar) {
+            throw
+        }
+        Remove-Item -LiteralPath $Destination -Recurse -Force -ErrorAction SilentlyContinue
+        New-Item -ItemType Directory -Path $Destination -Force | Out-Null
+        & $tar.Source -xf $PackagePath -C $Destination
+        if ($LASTEXITCODE -ne 0) {
+            throw
+        }
+    }
 }
 
 function Get-AppxArchiveFormat([string] $PackagePath, [string] $WorkRoot) {

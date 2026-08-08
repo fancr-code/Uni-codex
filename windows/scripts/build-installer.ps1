@@ -208,7 +208,11 @@ if ($FixtureMode) {
 $buildParent = Join-Path $WindowsRoot 'build'
 New-Item -ItemType Directory -Path $buildParent -Force | Out-Null
 Assert-ReparseFreeAncestors $buildParent 'work/build parent'
-$workRoot = Join-Path $buildParent (
+# Keep the staging tree under the system temp root.  The offline payload
+# contains deep skill/plugin paths that can exceed MAX_PATH when nested below
+# the repository checkout; Inno only needs the staged tree, not its location.
+$workParent = [IO.Path]::GetTempPath()
+$workRoot = Join-Path $workParent (
     'installer-' + [Guid]::NewGuid().ToString('N'))
 $stage = Join-Path $workRoot 'stage'
 $appStage = Join-Path $stage 'app'
@@ -232,6 +236,8 @@ try {
     if ($communityThemes.Count -ne 10) {
         Fail "Expected 10 DreamSkin.cc community themes, found $($communityThemes.Count)"
     }
+    New-Item -ItemType Directory -Path (Join-Path $dreamSkinStage 'themes') -Force |
+        Out-Null
     Copy-Item -Path (Join-Path $communityThemesSource '*') `
         -Destination (Join-Path $dreamSkinStage 'themes') -Recurse -Force
     Copy-Item -LiteralPath (Join-Path $RepositoryRoot 'Resources/dream-skin/catalog.json') `
@@ -372,9 +378,11 @@ SmartScreen：首次运行可能出现“Windows 已保护你的电脑”
     throw
 } finally {
     if (Test-Path -LiteralPath $temporaryDist) {
-        Remove-Item -LiteralPath $temporaryDist -Recurse -Force
+        try { Remove-Item -LiteralPath $temporaryDist -Recurse -Force -ErrorAction SilentlyContinue }
+        catch { }
     }
     if (Test-Path -LiteralPath $workRoot) {
-        Remove-Item -LiteralPath $workRoot -Recurse -Force
+        try { Remove-Item -LiteralPath $workRoot -Recurse -Force -ErrorAction SilentlyContinue }
+        catch { }
     }
 }

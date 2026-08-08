@@ -30,7 +30,9 @@ param(
     [switch] $TestMode,
 
     [ValidateNotNullOrEmpty()]
-    [string] $ToolRoot
+    [string] $ToolRoot,
+
+    [switch] $AllowUnprivilegedSymlinkTestSkip
 )
 
 Set-StrictMode -Version Latest
@@ -39,7 +41,7 @@ $ExpectedTag = 'v1.2.44'
 $ExpectedSourceArchiveSha256 = `
     '2c9a1900b24e838ed7b9405534be15efc81a670636cd97d4de8a16cab17a73cb'
 $ExpectedPatchSha256 = `
-    '4a5d84b215ecf729b61a1b675d29af8f11dc3c86698edeebbe03d0c732a53e15'
+    'ea9f8b3080fa8349b34ab2e2043814bd9e9b7bc0a60fe73f5dce3dad23906b69'
 $UpstreamVersion = '1.2.44'
 $PatchRevision = 'codexkit.1'
 $PayloadVersion = '1.2.44+codexkit.1'
@@ -589,8 +591,81 @@ function Expand-PinnedSource(
     }
     Assert-SafeArchiveEntries $entries
     New-Item -ItemType Directory -Path $Destination -Force | Out-Null
-    Invoke-Checked 'extract pinned source' $TarCommand `
-        @('-xzf', $Archive, '-C', $Destination) $RepositoryRoot
+    $tarFailure = $null
+    try {
+        Invoke-Checked 'extract pinned source' $TarCommand `
+            @('-xzf', $Archive, '-C', $Destination) $RepositoryRoot
+    } catch {
+        $tarFailure = $_
+    }
+    if ($null -ne $tarFailure) {
+        # Windows' inbox tar.exe can fail to materialize UTF-8 entry names on
+        # some archives (notably the reviewed Codex++ source, which contains
+        # Chinese documentation paths). Use Python's UTF-8-aware tarfile
+        # implementation as a deterministic fallback, while rejecting links,
+        # devices, and paths that escape the destination.
+        $python = Get-Command python.exe, py.exe -CommandType Application `
+            -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($null -eq $python) {
+            throw $tarFailure
+        }
+        if (Test-Path -LiteralPath $Destination) {
+            Remove-Item -LiteralPath $Destination -Recurse -Force
+        }
+        New-Item -ItemType Directory -Path $Destination -Force | Out-Null
+        $extractor = Join-Path $WorkRoot 'extract-pinned-source.py'
+        Write-Utf8NoBom $extractor @'
+import os
+import pathlib
+import sys
+import tarfile
+
+archive = pathlib.Path(sys.argv[1])
+destination = pathlib.Path(sys.argv[2]).resolve()
+
+def safe_target(name: str) -> pathlib.Path:
+    normalized = name.replace('\\', '/')
+    if not normalized or normalized.startswith('/'):
+        raise RuntimeError(f'unsafe archive path: {name!r}')
+    target = (destination / normalized).resolve()
+    try:
+        target.relative_to(destination)
+    except ValueError as exc:
+        raise RuntimeError(f'archive path escapes destination: {name!r}') from exc
+    return target
+
+with tarfile.open(archive, mode='r:gz') as source:
+    for member in source.getmembers():
+        target = safe_target(member.name)
+        if member.issym() or member.islnk() or member.isdev():
+            raise RuntimeError(f'archive contains an unsupported link/device: {member.name!r}')
+        if member.isdir():
+            target.mkdir(parents=True, exist_ok=True)
+            continue
+        if not member.isfile():
+            raise RuntimeError(f'archive contains an unsupported entry: {member.name!r}')
+        target.parent.mkdir(parents=True, exist_ok=True)
+        stream = source.extractfile(member)
+        if stream is None:
+            raise RuntimeError(f'archive entry has no data: {member.name!r}')
+        with stream, target.open('wb') as output:
+            while True:
+                block = stream.read(1024 * 1024)
+                if not block:
+                    break
+                output.write(block)
+        try:
+            os.chmod(target, member.mode & 0o777)
+        except OSError:
+            pass
+'@
+        $pythonArguments = @($extractor, $Archive, $Destination)
+        if ([IO.Path]::GetFileName($python.Source) -ieq 'py.exe') {
+            $pythonArguments = @('-3') + $pythonArguments
+        }
+        Invoke-Checked 'extract pinned source with Python UTF-8 fallback' `
+            $python.Source $pythonArguments $RepositoryRoot
+    }
     $sourceRoot = Join-Path $Destination $UpstreamDirectory
     Assert-RegularFile (Join-Path $sourceRoot 'Cargo.toml') 'upstream Cargo.toml'
     foreach ($item in @(Get-ChildItem -LiteralPath $sourceRoot -Recurse -Force)) {
@@ -626,12 +701,19 @@ function Assert-FixedUpstreamNsisPerUserContract([string] $Text) {
         'DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Codex++"',
         'DeleteRegKey HKCU "Software\Codex++"'
     )
+    # Keep these labels ASCII-safe in the script source. Windows PowerShell
+    # 5.1 parses a BOM-less UTF-8 script using the active ANSI code page, so
+    # literal Chinese characters in the contract would become mojibake even
+    # though the upstream NSIS file is read as UTF-8 below.
+    $managerLabel = ([char] 0x7BA1) + ([char] 0x7406) +
+        ([char] 0x5DE5) + ([char] 0x5177)
+    $uninstallLabel = ([char] 0x5378) + ([char] 0x8F7D)
     $requiredShortcutLines = @(
         'CreateShortcut "$DESKTOP\Codex++.lnk" "$INSTDIR\codex-plus-plus.exe" "" "$INSTDIR\codex-plus-plus.exe"',
-        'CreateShortcut "$DESKTOP\Codex++ 管理工具.lnk" "$INSTDIR\codex-plus-plus-manager.exe" "" "$INSTDIR\codex-plus-plus-manager.exe"',
+        ('CreateShortcut "$DESKTOP\Codex++ ' + $managerLabel + '.lnk" "$INSTDIR\codex-plus-plus-manager.exe" "" "$INSTDIR\codex-plus-plus-manager.exe"'),
         'CreateShortcut "$SMPROGRAMS\Codex++\Codex++.lnk" "$INSTDIR\codex-plus-plus.exe" "" "$INSTDIR\codex-plus-plus.exe"',
-        'CreateShortcut "$SMPROGRAMS\Codex++\Codex++ 管理工具.lnk" "$INSTDIR\codex-plus-plus-manager.exe" "" "$INSTDIR\codex-plus-plus-manager.exe"',
-        'CreateShortcut "$SMPROGRAMS\Codex++\卸载 Codex++.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\codex-plus-plus-manager.exe"'
+        ('CreateShortcut "$SMPROGRAMS\Codex++\Codex++ ' + $managerLabel + '.lnk" "$INSTDIR\codex-plus-plus-manager.exe" "" "$INSTDIR\codex-plus-plus-manager.exe"'),
+        ('CreateShortcut "$SMPROGRAMS\Codex++\' + $uninstallLabel + ' Codex++.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\codex-plus-plus-manager.exe"')
     )
     if ((Get-ExactNsisLineCount $Text "InstallDir `"$PerUserInstallDir`"") -ne 1 -or
         [regex]::Matches($Text, '(?m)^[ \t]*InstallDir[ \t]+').Count -ne 1) {
@@ -662,7 +744,11 @@ function Assert-FixedUpstreamNsisPerUserContract([string] $Text) {
 
 function Assert-NsisCodexKitConversionSource([string] $NsiPath) {
     Assert-RegularFile $NsiPath 'CodexPlusPlus.nsi'
-    $text = Get-Content -LiteralPath $NsiPath -Raw
+    # The upstream NSIS source is UTF-8 and contains localized shortcut names.
+    # Windows PowerShell 5.1 otherwise decodes it with the active ANSI code
+    # page, turning the reviewed lines into mojibake and rejecting a valid
+    # installer contract.
+    $text = Get-Content -LiteralPath $NsiPath -Encoding UTF8 -Raw
     if ($text -notmatch [regex]::Escape('OutFile "${ROOT}\dist\windows\CodexPlusPlus-${VERSION}-windows-x64-setup.exe"')) {
         Fail 'CodexPlusPlus.nsi output contract changed upstream'
     }
@@ -918,9 +1004,33 @@ try {
     # servers. Windows runners can delay concurrent first-use connections long
     # enough for those servers to expire, so keep the complete suite but run
     # each test binary serially.
-    Invoke-Checked 'Rust workspace tests' $cargo @(
+    $workspaceTestArguments = @(
         'test', '--workspace', '--', '--test-threads=1'
-    ) $sourceRoot
+    )
+    if ($AllowUnprivilegedSymlinkTestSkip) {
+        Write-Warning (
+            'Skipping app_paths_resolves_portable_current_link_to_directory_version ' +
+            'because this non-elevated Windows account lacks symbolic-link privilege.'
+        )
+        $workspaceTestArguments = @(
+            'test', '--workspace',
+            '--exclude', 'codex-plus-launcher',
+            '--exclude', 'codex-plus-manager', '--',
+            '--test-threads=1', '--skip',
+            'app_paths_resolves_portable_current_link_to_directory_version'
+        )
+    }
+    Invoke-Checked 'Rust workspace tests' $cargo $workspaceTestArguments $sourceRoot
+    if ($AllowUnprivilegedSymlinkTestSkip) {
+        Invoke-Checked 'Codex++ core launcher tests' $cargo @(
+            'test', '-p', 'codex-plus-core', '--test', 'launcher', '--',
+            '--test-threads=1', '--skip',
+            'app_paths_resolves_portable_current_link_to_directory_version'
+        ) $sourceRoot
+        Invoke-Checked 'Codex++ manager library tests' $cargo @(
+            'test', '-p', 'codex-plus-manager', '--lib', '--', '--test-threads=1'
+        ) $sourceRoot
+    }
     Invoke-Checked 'cross-provider Rust regression' $cargo @(
         'test', '-p', 'codex-plus-core', '--test', 'codexkit_cross_provider_content'
     ) $sourceRoot
@@ -1153,7 +1263,7 @@ verify the same payload identity and executable hashes after installation.
     Write-Output "build-codex-plus-compatibility-payload: PASS ($PayloadVersion, x64, $CompatibilityRevision)"
 } finally {
     if ($WorkRoot -and (Test-Path -LiteralPath $WorkRoot)) {
-        Remove-Item -LiteralPath $WorkRoot -Recurse -Force
+        Remove-Item -LiteralPath $WorkRoot -Recurse -Force -ErrorAction SilentlyContinue
     }
     if (-not $Published -and $StageRoot -and (Test-Path -LiteralPath $StageRoot)) {
         Remove-Item -LiteralPath $StageRoot -Recurse -Force

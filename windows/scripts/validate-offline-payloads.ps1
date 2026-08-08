@@ -198,8 +198,8 @@ Assert-RegularPath $ManifestPath $false 'payload manifest'
 $LockPath = Join-Path $ResolvedPayloadRoot 'payload-lock.json'
 Assert-RegularPath $LockPath $false 'payload lock'
 try {
-    $manifest = Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json
-    $lock = Get-Content -LiteralPath $LockPath -Raw | ConvertFrom-Json
+    $manifest = Get-Content -LiteralPath $ManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $lock = Get-Content -LiteralPath $LockPath -Raw -Encoding UTF8 | ConvertFrom-Json
 } catch {
     Fail "payload JSON is invalid: $($_.Exception.Message)"
 }
@@ -344,7 +344,7 @@ if ($expectedPlugins.Count -ne 9 -or
 }
 $pluginCatalogPath = Resolve-PayloadPath 'plugins/plugin-catalog.json'
 Assert-RegularPath $pluginCatalogPath $false 'hashed plugin catalog'
-$pluginCatalog = Get-Content -LiteralPath $pluginCatalogPath -Raw | ConvertFrom-Json
+$pluginCatalog = Get-Content -LiteralPath $pluginCatalogPath -Raw -Encoding UTF8 | ConvertFrom-Json
 if ([int] $pluginCatalog.schemaVersion -ne 2) {
     Fail 'plugin catalog schemaVersion must be 2'
 }
@@ -401,7 +401,7 @@ foreach ($pluginIdentity in $offlinePlugins) {
     }
     $identityPath = Resolve-PayloadPath (
         "plugins/marketplaces/$market/plugins/$id/.codex-plugin/plugin.json")
-    $identity = Get-Content -LiteralPath $identityPath -Raw | ConvertFrom-Json
+    $identity = Get-Content -LiteralPath $identityPath -Raw -Encoding UTF8 | ConvertFrom-Json
     if ($identity.name -cne $id -or
         [string]::IsNullOrWhiteSpace([string] $identity.version)) {
         Fail "plugin identity mismatch: $market/$id"
@@ -419,7 +419,7 @@ foreach ($pluginIdentity in $offlinePlugins) {
     }
     $cachedIdentityPath = Resolve-PayloadPath (
         "plugins/cache/$market/$id/$($identity.version)/.codex-plugin/plugin.json")
-    $cachedIdentity = Get-Content -LiteralPath $cachedIdentityPath -Raw | ConvertFrom-Json
+    $cachedIdentity = Get-Content -LiteralPath $cachedIdentityPath -Raw -Encoding UTF8 | ConvertFrom-Json
     if ($cachedIdentity.name -cne $id -or
         $cachedIdentity.version -cne $identity.version) {
         Fail "cached plugin identity mismatch: $market/$id"
@@ -432,7 +432,7 @@ if ($upstreamDigest.Sha256 -cne [string] $lock.scriptMarket.indexSha256) {
     Fail 'fixed-commit script market index hash does not match payload-lock'
 }
 $scriptIndexPath = Resolve-PayloadPath 'script-market/index.json'
-$scriptIndex = Get-Content -LiteralPath $scriptIndexPath -Raw | ConvertFrom-Json
+$scriptIndex = Get-Content -LiteralPath $scriptIndexPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $indexedScriptPaths = New-Object 'System.Collections.Generic.HashSet[string]' (
     [StringComparer]::OrdinalIgnoreCase)
 foreach ($script in @($scriptIndex.scripts)) {
@@ -572,7 +572,8 @@ try {
     }
 } finally {
     if (Test-Path -LiteralPath $workRoot) {
-        Remove-Item -LiteralPath $workRoot -Recurse -Force
+        try { Remove-Item -LiteralPath $workRoot -Recurse -Force -ErrorAction SilentlyContinue }
+        catch { }
     }
 }
 

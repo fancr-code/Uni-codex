@@ -70,7 +70,7 @@ if (@($topFiles | Where-Object { $_ -like '*.exe' }).Count -ne 1) {
 }
 
 $checksumPath = Join-Path $dist 'SHA256SUMS.txt'
-$checksumLines = @(Get-Content -LiteralPath $checksumPath | Where-Object { $_ -ne '' })
+$checksumLines = @(Get-Content -LiteralPath $checksumPath -Encoding UTF8 | Where-Object { $_ -ne '' })
 $checksums = @{}
 foreach ($line in $checksumLines) {
     if ($line -notmatch '^([0-9a-f]{64})  ([^/\\]+)$') {
@@ -96,9 +96,9 @@ if (Compare-Object @($expectedChecksumNames | Sort-Object) @($checksums.Keys | S
 }
 
 try {
-    $manifest = Get-Content -LiteralPath (Join-Path $dist 'payload-manifest.json') -Raw |
+    $manifest = Get-Content -LiteralPath (Join-Path $dist 'payload-manifest.json') -Raw -Encoding UTF8 |
         ConvertFrom-Json
-    $sbom = Get-Content -LiteralPath (Join-Path $dist 'SBOM.spdx.json') -Raw |
+    $sbom = Get-Content -LiteralPath (Join-Path $dist 'SBOM.spdx.json') -Raw -Encoding UTF8 |
         ConvertFrom-Json
 } catch {
     Fail "release JSON is invalid: $($_.Exception.Message)"
@@ -152,7 +152,7 @@ $containsTargets = @(
 if (Compare-Object $fileIds $containsTargets) {
     Fail 'SBOM CONTAINS targets do not exactly cover the file SPDX IDs'
 }
-$report = Get-Content -LiteralPath (Join-Path $dist 'RELEASE-REPORT.zh-CN.md') -Raw
+$report = Get-Content -LiteralPath (Join-Path $dist 'RELEASE-REPORT.zh-CN.md') -Raw -Encoding UTF8
 foreach ($text in @(
     '签名状态：未签名（首个 Windows 测试版）',
     'SmartScreen：首次运行可能出现“Windows 已保护你的电脑”',

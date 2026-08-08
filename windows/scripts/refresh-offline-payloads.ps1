@@ -12,6 +12,7 @@ param(
     [Parameter(Mandatory)] [string] $OutputRoot,
     [Parameter(Mandatory)] [string] $CodexPlusPlusSetup,
     [Parameter(Mandatory)] [string] $CodexPlusPlusSource,
+    [string] $CodexPackagePath = '',
     [switch] $UseCachedModelCatalog
 )
 
@@ -177,7 +178,20 @@ function Expand-Appx([string] $Package, [string] $Destination) {
     try {
         [IO.Compression.ZipFile]::ExtractToDirectory($Package, $Destination)
     } catch {
-        Fail "official Store response is not an Appx archive: $($_.Exception.Message)"
+        # Windows PowerShell/.NET can reject valid MSIX entries when the
+        # expanded path exceeds MAX_PATH. The signed package is still a ZIP
+        # archive, and inbox tar.exe handles these long UTF-8 paths correctly.
+        $tar = Get-Command tar.exe -CommandType Application -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+        if ($null -eq $tar) {
+            Fail "official Store response is not an Appx archive: $($_.Exception.Message)"
+        }
+        Remove-Item -LiteralPath $Destination -Recurse -Force -ErrorAction SilentlyContinue
+        New-Item -ItemType Directory -Path $Destination -Force | Out-Null
+        & $tar.Source -xf $Package -C $Destination
+        if ($LASTEXITCODE -ne 0) {
+            Fail "official Store response is not an Appx archive: $($_.Exception.Message)"
+        }
     }
 }
 
@@ -219,34 +233,62 @@ function Assert-ValidSignature([string] $Path, [string] $Description) {
     return $signature
 }
 
-function Resolve-StoreCodexPackage([string] $ProductId) {
-    Assert-RegularFile $StorePackageResolverProject 'Store package resolver project'
-    $resolverOutput = @(& dotnet run --project $StorePackageResolverProject `
-        --configuration Release --no-restore -- $ProductId x64 OpenAI.Codex 2>&1)
-    $resolverExitCode = $LASTEXITCODE
-    if ($resolverExitCode -ne 0) {
-        $summary = (@($resolverOutput | Select-Object -First 8) -join ' ')
-        if ($summary.Length -gt 1000) { $summary = $summary.Substring(0, 1000) }
-        Fail "Microsoft Store resolver failed ($resolverExitCode): $summary"
+function Copy-DirectoryTree([string] $Source, [string] $Destination) {
+    New-Item -ItemType Directory -Path $Destination -Force | Out-Null
+    $robocopy = Get-Command robocopy.exe -CommandType Application -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+    if ($null -ne $robocopy) {
+        & $robocopy.Source $Source $Destination '/E' '/COPY:DAT' '/DCOPY:DAT' '/R:0' '/W:0' `
+            '/NFL' '/NDL' '/NJH' '/NJS' '/NP' | Out-Null
+        if ($LASTEXITCODE -gt 7) {
+            Fail "directory copy failed ($LASTEXITCODE): $Source"
+        }
+        return
     }
-    $matches = @($resolverOutput | Where-Object {
-        [string] $_ -match
-            '^OpenAI\.Codex_[0-9]+(\.[0-9]+){3}_x64__2p2nqsd0c76g0\thttps?://\S+$'
-    })
-    if ($matches.Count -ne 1) {
-        Fail 'Microsoft Store resolver did not return exactly one x64 OpenAI.Codex package'
-    }
-    $parts = [string] $matches[0] -split "`t", 2
-    $downloadUri = [uri] $parts[1]
-    if ($downloadUri.Scheme -notin @('http', 'https') -or
-        ($downloadUri.Host -cne 'dl.delivery.mp.microsoft.com' -and
-         -not $downloadUri.Host.EndsWith(
-            '.dl.delivery.mp.microsoft.com',
-            [StringComparison]::OrdinalIgnoreCase))) {
-        Fail "Microsoft Store resolver returned an untrusted CDN host: $($downloadUri.Host)"
-    }
+    Copy-Item -LiteralPath $Source -Destination $Destination -Recurse -Force
+}
+
+function Resolve-StoreCodexPackage(
+    [string] $ProductId,
+    [string] $CachedPackage = ''
+) {
+    $packageMoniker = ''
+    $downloadUri = [uri] "https://apps.microsoft.com/detail/$ProductId"
     $download = Join-Path $WorkRoot 'store/Codex.msix'
-    Invoke-MicrosoftStorePackageDownload $downloadUri $download
+    if (-not [string]::IsNullOrWhiteSpace($CachedPackage)) {
+        Assert-RegularFile $CachedPackage 'cached official Codex package'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $download) -Force | Out-Null
+        Copy-Item -LiteralPath $CachedPackage -Destination $download -Force
+        $packageMoniker = "cached:$ProductId"
+    } else {
+        Assert-RegularFile $StorePackageResolverProject 'Store package resolver project'
+        $resolverOutput = @(& dotnet run --project $StorePackageResolverProject `
+            --configuration Release --no-restore -- $ProductId x64 OpenAI.Codex 2>&1)
+        $resolverExitCode = $LASTEXITCODE
+        if ($resolverExitCode -ne 0) {
+            $summary = (@($resolverOutput | Select-Object -First 8) -join ' ')
+            if ($summary.Length -gt 1000) { $summary = $summary.Substring(0, 1000) }
+            Fail "Microsoft Store resolver failed ($resolverExitCode): $summary"
+        }
+        $matches = @($resolverOutput | Where-Object {
+            [string] $_ -match
+                '^OpenAI\.Codex_[0-9]+(\.[0-9]+){3}_x64__2p2nqsd0c76g0\thttps?://\S+$'
+        })
+        if ($matches.Count -ne 1) {
+            Fail 'Microsoft Store resolver did not return exactly one x64 OpenAI.Codex package'
+        }
+        $parts = [string] $matches[0] -split "`t", 2
+        $packageMoniker = $parts[0]
+        $downloadUri = [uri] $parts[1]
+        if ($downloadUri.Scheme -notin @('http', 'https') -or
+            ($downloadUri.Host -cne 'dl.delivery.mp.microsoft.com' -and
+             -not $downloadUri.Host.EndsWith(
+                '.dl.delivery.mp.microsoft.com',
+                [StringComparison]::OrdinalIgnoreCase))) {
+            Fail "Microsoft Store resolver returned an untrusted CDN host: $($downloadUri.Host)"
+        }
+        Invoke-MicrosoftStorePackageDownload $downloadUri $download
+    }
     Assert-NotPeFile $download 'resolved official Codex package'
     [void] (Assert-ValidSignature $download 'resolved official Codex package')
     try {
@@ -265,7 +307,7 @@ function Resolve-StoreCodexPackage([string] $ProductId) {
     }
     return [pscustomobject]@{
         Graph = $graph
-        PackageMoniker = $parts[0]
+        PackageMoniker = $packageMoniker
         DownloadURL = $downloadUri.AbsoluteUri
     }
 }
@@ -309,7 +351,7 @@ function Get-PinnedPluginMarket([string] $Marketplace, [object] $SeedLock) {
         $declared[$id] = $version
         $identityPath = Join-Path $pluginsRoot "$id/.codex-plugin/plugin.json"
         Assert-RegularFile $identityPath "plugin seed identity $Marketplace/$id"
-        $identity = Get-Content -LiteralPath $identityPath -Raw |
+        $identity = Get-Content -LiteralPath $identityPath -Raw -Encoding UTF8 |
             ConvertFrom-Json
         if ($identity.name -cne $id -or
             $identity.version -cne $version -or
@@ -366,7 +408,7 @@ function New-OfflineMarketplaceMetadata(
 function Copy-PinnedPlugins([string] $CodexExpandedRoot, [string] $Destination) {
     New-Item -ItemType Directory -Path (Join-Path $Destination 'marketplaces') -Force | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $Destination 'cache') -Force | Out-Null
-    $catalog = Get-Content -LiteralPath $PluginCatalogSource -Raw | ConvertFrom-Json
+    $catalog = Get-Content -LiteralPath $PluginCatalogSource -Raw -Encoding UTF8 | ConvertFrom-Json
     if ([int] $catalog.schemaVersion -ne 2 -or
         @($catalog.plugins).Count -ne 9) {
         Fail 'plugin catalog must contain exactly nine schema-2 plugins'
@@ -387,7 +429,7 @@ function Copy-PinnedPlugins([string] $CodexExpandedRoot, [string] $Destination) 
         }
     }
     $expectedMarkets = @('openai-bundled', 'openai-curated')
-    $seedLock = Get-Content -LiteralPath $PluginSeedLockPath -Raw |
+    $seedLock = Get-Content -LiteralPath $PluginSeedLockPath -Raw -Encoding UTF8 |
         ConvertFrom-Json
     if ($seedLock.schemaVersion -ne 1 -or
         $seedLock.sourceRepository -cne 'https://github.com/openai/plugins' -or
@@ -402,13 +444,29 @@ function Copy-PinnedPlugins([string] $CodexExpandedRoot, [string] $Destination) 
         Fail 'plugin seed lock must disclose the added MIT license text'
     }
     $seedMarket = Get-PinnedPluginMarket 'openai-curated' $seedLock
+    # The current Store package places the marketplace at this stable path.
+    # Prefer direct probes because recursive PowerShell enumeration can fail
+    # on long paths inside the official Node dependency tree.
     $bundledCandidates = @(
-        Get-ChildItem -LiteralPath $CodexExpandedRoot -Directory -Recurse -Force |
-            Where-Object {
-                $_.Name -ceq 'openai-bundled' -and
-                (Test-Path -LiteralPath (Join-Path $_.FullName 'plugins') -PathType Container)
-            }
-    )
+        @(
+            'app/resources/plugins/openai-bundled',
+            'resources/plugins/openai-bundled',
+            'openai-bundled'
+        ) | ForEach-Object {
+        $candidate = Join-Path $CodexExpandedRoot $_
+        if (Test-Path -LiteralPath (Join-Path $candidate 'plugins') -PathType Container) {
+            Get-Item -LiteralPath $candidate -Force
+        }
+    })
+    if ($bundledCandidates.Count -ne 1) {
+        $bundledCandidates = @(
+            Get-ChildItem -LiteralPath $CodexExpandedRoot -Directory -Recurse -Force -ErrorAction SilentlyContinue |
+                Where-Object {
+                    $_.Name -ceq 'openai-bundled' -and
+                    (Test-Path -LiteralPath (Join-Path $_.FullName 'plugins') -PathType Container)
+                }
+        )
+    }
     if ($bundledCandidates.Count -ne 1) {
         Fail 'official Codex payload must contain exactly one openai-bundled marketplace'
     }
@@ -433,18 +491,18 @@ function Copy-PinnedPlugins([string] $CodexExpandedRoot, [string] $Destination) 
             Join-Path $seedMarket.Root "plugins/$($plugin.id)"
         }
         if (-not (Test-Path -LiteralPath $source)) {
-            Copy-Item -LiteralPath $upstreamPlugin -Destination $source -Recurse
+            Copy-DirectoryTree $upstreamPlugin $source
         }
         Assert-RegularFile (Join-Path $source '.codex-plugin/plugin.json') `
             "plugin identity $($plugin.marketplace)/$($plugin.id)"
-        $identity = Get-Content -LiteralPath (Join-Path $source '.codex-plugin/plugin.json') -Raw |
+        $identity = Get-Content -LiteralPath (Join-Path $source '.codex-plugin/plugin.json') -Raw -Encoding UTF8 |
             ConvertFrom-Json
         if ($identity.name -cne $plugin.id -or [string]::IsNullOrWhiteSpace([string] $identity.version)) {
             Fail "plugin identity mismatch: $($plugin.marketplace)/$($plugin.id)"
         }
         $cache = Join-Path $Destination "cache/$($plugin.marketplace)/$($plugin.id)/$($identity.version)"
         New-Item -ItemType Directory -Path (Split-Path -Parent $cache) -Force | Out-Null
-        Copy-Item -LiteralPath $source -Destination $cache -Recurse
+        Copy-DirectoryTree $source $cache
     }
 }
 
@@ -460,9 +518,9 @@ function Copy-ScriptMarket(
     if ((Get-FileDigest $upstreamIndexPath).Sha256 -cne $ExpectedIndexSha) {
         Fail 'script-market upstream index hash does not match payload lock'
     }
-    $index = Get-Content -LiteralPath $upstreamIndexPath -Raw | ConvertFrom-Json
+    $index = Get-Content -LiteralPath $upstreamIndexPath -Raw -Encoding UTF8 | ConvertFrom-Json
     $overrides = @((Get-Content -LiteralPath (
-        Join-Path $RepositoryRoot 'Resources/script-market-overrides.json') -Raw |
+        Join-Path $RepositoryRoot 'Resources/script-market-overrides.json') -Raw -Encoding UTF8 |
         ConvertFrom-Json).overrides)
     $seen = @{}
     foreach ($script in @($index.scripts)) {
@@ -535,8 +593,8 @@ try {
     if (-not (Test-Path -LiteralPath $PluginSeedRoot -PathType Container)) {
         Fail "plugin seed root is missing: $PluginSeedRoot"
     }
-    $sources = Get-Content -LiteralPath $SourcesPath -Raw | ConvertFrom-Json
-    $lock = Get-Content -LiteralPath $LockPath -Raw | ConvertFrom-Json
+    $sources = Get-Content -LiteralPath $SourcesPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $lock = Get-Content -LiteralPath $LockPath -Raw -Encoding UTF8 | ConvertFrom-Json
     try { Assert-PayloadLockMatchesPolicy $lock (Get-WindowsPayloadPolicy) }
     catch { Fail $_.Exception.Message }
     if ($sources.schemaVersion -ne 2 -or $lock.schemaVersion -ne 2 -or
@@ -552,7 +610,7 @@ try {
         Fail 'payload lock does not contain the approved script-market index hash'
     }
     if ((Split-Path -Leaf $CodexPlusPlusSetup) -cnotmatch
-        '^CodexPlusPlus-1\.2\.43-codexkit\.1-windows-x64-setup\.exe$' -or
+        '^CodexPlusPlus-1\.2\.44-codexkit\.1-windows-x64-setup\.exe$' -or
         (Split-Path -Leaf $CodexPlusPlusSource) -cnotmatch
         '^CodexPlusPlus-v1\.2\.44-codexkit\.1-source\.tar\.gz$') {
         Fail 'Codex++ inputs are not the exact Task 3 v1.2.44+codexkit.1 artifacts'
@@ -564,7 +622,7 @@ try {
         New-Item -ItemType Directory -Path (Join-Path $StageRoot $directory) -Force | Out-Null
     }
 
-    $resolvedStore = Resolve-StoreCodexPackage $sources.codexStoreProductId
+    $resolvedStore = Resolve-StoreCodexPackage $sources.codexStoreProductId $CodexPackagePath
     $graph = $resolvedStore.Graph
     $identity = $graph.Main.Identity
     if ($identity.Architecture -cne 'x64' -or
@@ -680,9 +738,11 @@ try {
     Write-Output "refresh-offline-payloads: PASS ($OutputFull)"
 } finally {
     if (Test-Path -LiteralPath $StageRoot) {
-        Remove-Item -LiteralPath $StageRoot -Recurse -Force
+        try { Remove-Item -LiteralPath $StageRoot -Recurse -Force -ErrorAction SilentlyContinue }
+        catch { }
     }
     if (Test-Path -LiteralPath $WorkRoot) {
-        Remove-Item -LiteralPath $WorkRoot -Recurse -Force
+        try { Remove-Item -LiteralPath $WorkRoot -Recurse -Force -ErrorAction SilentlyContinue }
+        catch { }
     }
 }
