@@ -89,7 +89,6 @@ Uni-codex 也可以配合以下工具形成连续科研工作流：
 离线包把 10 套精选主题直接放入本地主题库；在线包在安装时从 DreamSkin.cc 固定 API 下载并逐个校验 SHA-256。精选清单、作者、声明许可证和冻结哈希见 [`Resources/dream-skin/catalog.json`](Resources/dream-skin/catalog.json)。主题素材仍受各自作者声明的许可证约束，详见 [第三方许可说明](Resources/licenses/Third-Party-Notices.md)。
 
 Dream Skin 是非 OpenAI 官方项目，采用其上游 MIT 软件许可，且不会修改官方 Codex 安装包本体。
-
 ## 常见问题
 
 ### 为什么安装包这么小？

@@ -223,7 +223,6 @@ function Install-DreamSkinThemes {
     }
     Write-Step "Installed $($DreamSkinThemeIds.Count) curated DreamSkin.cc themes"
 }
-
 function Install-SkillCollections {
     $installer = Join-Path $PSScriptRoot 'Install-SkillCollections.ps1'
     $manifest = Join-Path $PSScriptRoot 'skills/collections.json'

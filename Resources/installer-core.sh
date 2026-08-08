@@ -1963,7 +1963,6 @@ APPLESCRIPT
   fi
   emit_event dream_skin_installed 0.87 "Codex Dream Skin 已安装（Gothic Void Crusade，已预装 ${seeded_count} 套精选主题；${gallery_api_status}）" null
 }
-
 install_skill_collections() {
   [[ -x "$SCRIPT_DIR/install-skill-collections.sh" \
      && -f "$SCRIPT_DIR/skill-collections.json" \

@@ -228,7 +228,6 @@ if [[ "$DREAM_SKIN_PRESET" != 'none' ]]; then
 else
   printf '保留官方默认外观。\n'
 fi
-
 printf '正在安装科研技能合集…\n'
 UNICODEX_SKILL_MANIFEST="$SCRIPT_DIR/skills/collections.json" \
   "$SCRIPT_DIR/install-skill-collections.sh"
