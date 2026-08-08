@@ -1,0 +1,46 @@
+{
+  "packageVersion": 1,
+  "themeId": "wukong",
+  "version": "0.1.0",
+  "skinApiVersion": 1,
+  "minClientVersion": "1.5.2",
+  "platforms": [
+    "macos",
+    "windows"
+  ],
+  "capabilities": [
+    "background",
+    "tokens",
+    "safe-css"
+  ],
+  "publisher": {
+    "id": "JamesOpsLab",
+    "displayName": "JamesOpsLab"
+  },
+  "license": "MIT",
+  "provenance": {
+    "aiGenerated": true,
+    "summary": "ChatGPT"
+  },
+  "files": [
+    {
+      "path": "theme.json",
+      "mediaType": "application/json",
+      "bytes": 508,
+      "sha256": "6c0d8c5cff22bd67106d7c08e55542f555e6532a4c7b81aa43bee2b0c66aea0e"
+    },
+    {
+      "path": "background.webp",
+      "mediaType": "image/webp",
+      "bytes": 428680,
+      "sha256": "da6d39f8811e65af038c862e4314716ee4608e225a82e69ae9456f17eebfa97c"
+    },
+    {
+      "path": "theme.css",
+      "mediaType": "text/css",
+      "bytes": 273,
+      "sha256": "3f5401920639e102d2e3871057f2bb68d290a5ca5f5a14c9e01cb2ff7be088e3"
+    }
+  ],
+  "createdAt": "2026-07-27T01:22:06.844Z"
+}

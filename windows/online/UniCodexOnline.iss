@@ -41,14 +41,17 @@ begin
     True,
     False);
   DreamSkinPage.Add('Gothic Void Crusade（推荐）');
+  DreamSkinPage.Add('DreamSkin.cc 主题库（安装时连接 API）');
   DreamSkinPage.Add('官方默认外观（不启用 Dream Skin）');
   DreamSkinPage.SelectedValueIndex := 0;
 end;
 
 function GetDreamSkinPreset(Param: String): String;
 begin
-  if (DreamSkinPage <> nil) and (DreamSkinPage.SelectedValueIndex = 1) then
+  if (DreamSkinPage <> nil) and (DreamSkinPage.SelectedValueIndex = 2) then
     Result := 'none'
+  else if (DreamSkinPage <> nil) and (DreamSkinPage.SelectedValueIndex = 1) then
+    Result := 'gallery'
   else
     Result := 'preset-gothic-void-crusade';
 end;

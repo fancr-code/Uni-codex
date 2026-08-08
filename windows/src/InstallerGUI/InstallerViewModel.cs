@@ -254,6 +254,9 @@ public sealed class InstallerViewModel : INotifyPropertyChanged
                 "preset-gothic-void-crusade",
                 "Gothic Void Crusade（推荐）"),
             new DreamSkinChoice(
+                "gallery",
+                "DreamSkin.cc 主题库（安装时连接 API）"),
+            new DreamSkinChoice(
                 "none",
                 "官方默认外观（不启用 Dream Skin）")
         ]);

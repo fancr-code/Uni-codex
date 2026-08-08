@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "leimu",
+  "name": "雷姆酱",
+  "image": "background.jpg",
+  "appearance": "auto",
+  "art": {
+    "focusX": 0.5,
+    "focusY": 0.5,
+    "safeArea": "none",
+    "taskMode": "ambient"
+  },
+  "colors": {
+    "background": "#da98c2",
+    "panel": "#e8d6ec",
+    "panelAlt": "#e9d8e9",
+    "accent": "#3b44c4",
+    "accentAlt": "#40479b",
+    "secondary": "#8d3069",
+    "highlight": "#383e87",
+    "text": "#353361",
+    "muted": "#696869",
+    "line": "#d3d3d3"
+  }
+}

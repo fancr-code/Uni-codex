@@ -1,0 +1,46 @@
+{
+  "packageVersion": 1,
+  "themeId": "usr-49e16299682ecef4aa46.idea-engine",
+  "version": "0.1.0",
+  "skinApiVersion": 1,
+  "minClientVersion": "0.1.0",
+  "platforms": [
+    "macos",
+    "windows"
+  ],
+  "capabilities": [
+    "background",
+    "tokens",
+    "safe-css"
+  ],
+  "publisher": {
+    "id": "usr_49e16299682ecef4aa46",
+    "displayName": "axdlee"
+  },
+  "license": "CC BY 4.0",
+  "provenance": {
+    "aiGenerated": true,
+    "summary": "AI 生成背景；基于原创视觉方向创建，并经过人工构图、配色与可读性筛选。"
+  },
+  "files": [
+    {
+      "path": "theme.json",
+      "mediaType": "application/json",
+      "bytes": 804,
+      "sha256": "d7c33542b778ea0003d48917d6adbc21346aee77d77e2069092ac9b1bb8e5a06"
+    },
+    {
+      "path": "background.png",
+      "mediaType": "image/png",
+      "bytes": 2065325,
+      "sha256": "4a4db3d0f8583413bfa31e651bf67b5532fe596b2c1554492eb464c851a479a7"
+    },
+    {
+      "path": "theme.css",
+      "mediaType": "text/css",
+      "bytes": 273,
+      "sha256": "3f5401920639e102d2e3871057f2bb68d290a5ca5f5a14c9e01cb2ff7be088e3"
+    }
+  ],
+  "createdAt": "2026-07-28T06:47:47.802Z"
+}

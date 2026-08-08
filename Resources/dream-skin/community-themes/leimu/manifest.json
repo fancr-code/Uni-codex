@@ -1,0 +1,46 @@
+{
+  "packageVersion": 1,
+  "themeId": "leimu",
+  "version": "0.1.0",
+  "skinApiVersion": 1,
+  "minClientVersion": "0.0.1",
+  "platforms": [
+    "macos",
+    "windows"
+  ],
+  "capabilities": [
+    "background",
+    "tokens",
+    "safe-css"
+  ],
+  "publisher": {
+    "id": "Christopher",
+    "displayName": "Christopher"
+  },
+  "license": "MIT",
+  "provenance": {
+    "aiGenerated": false,
+    "summary": "开源图片下载"
+  },
+  "files": [
+    {
+      "path": "theme.json",
+      "mediaType": "application/json",
+      "bytes": 499,
+      "sha256": "d3b11c8953088d71504fbc42b74d497852d833420e48e384ebe042207bdd10ad"
+    },
+    {
+      "path": "background.jpg",
+      "mediaType": "image/jpeg",
+      "bytes": 1514407,
+      "sha256": "d4ce41623f339a38fca80efb458cd1ef0a276c82b355286e5549ef7859a520ef"
+    },
+    {
+      "path": "theme.css",
+      "mediaType": "text/css",
+      "bytes": 273,
+      "sha256": "3f5401920639e102d2e3871057f2bb68d290a5ca5f5a14c9e01cb2ff7be088e3"
+    }
+  ],
+  "createdAt": "2026-07-28T02:21:08.520Z"
+}

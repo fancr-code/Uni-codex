@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "fisher-girl",
+  "name": "渔女",
+  "image": "background.jpg",
+  "appearance": "auto",
+  "art": {
+    "focusX": 0.5,
+    "focusY": 0.5,
+    "safeArea": "none",
+    "taskMode": "ambient"
+  },
+  "colors": {
+    "background": "#758dd7",
+    "panel": "#acaeec",
+    "panelAlt": "#6f88d3",
+    "accent": "#082f68",
+    "accentAlt": "#3880ee",
+    "secondary": "#b59780",
+    "highlight": "#5290f0",
+    "text": "#0c0c0d",
+    "muted": "#939394",
+    "line": "#3f3f40"
+  }
+}

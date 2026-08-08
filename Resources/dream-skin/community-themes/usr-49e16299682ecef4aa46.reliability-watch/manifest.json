@@ -1,0 +1,46 @@
+{
+  "packageVersion": 1,
+  "themeId": "usr-49e16299682ecef4aa46.reliability-watch",
+  "version": "0.1.1",
+  "skinApiVersion": 1,
+  "minClientVersion": "0.1.0",
+  "platforms": [
+    "macos",
+    "windows"
+  ],
+  "capabilities": [
+    "background",
+    "tokens",
+    "safe-css"
+  ],
+  "publisher": {
+    "id": "usr_49e16299682ecef4aa46",
+    "displayName": "axdlee"
+  },
+  "license": "CC BY 4.0",
+  "provenance": {
+    "aiGenerated": true,
+    "summary": "使用 OpenAI gpt-image-2 按原创提示词生成背景，并经过人工构图、配色与可读性筛选。"
+  },
+  "files": [
+    {
+      "path": "theme.json",
+      "mediaType": "application/json",
+      "bytes": 777,
+      "sha256": "ec6748f214d4186f5d2fb26f5885b684b995177cf93dc8892fcd0d5c689ec334"
+    },
+    {
+      "path": "background.png",
+      "mediaType": "image/png",
+      "bytes": 2438288,
+      "sha256": "f940956b9fd94c6e079c9e2c4b2b087e8fce95407fa33206352e8cb7e314c0af"
+    },
+    {
+      "path": "theme.css",
+      "mediaType": "text/css",
+      "bytes": 273,
+      "sha256": "3f5401920639e102d2e3871057f2bb68d290a5ca5f5a14c9e01cb2ff7be088e3"
+    }
+  ],
+  "createdAt": "2026-07-29T05:57:29.632Z"
+}

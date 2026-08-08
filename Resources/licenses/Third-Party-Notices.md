@@ -22,6 +22,12 @@
 
 Uni-codex 固定使用公开 Release v1.5.11 的 Windows Setup.exe 和 macOS DMG，安装前/构建时校验对应 SHA-256。该项目软件源代码采用 MIT License；公开预设 `Gothic Void Crusade` 是其上游声明可再分发的素材。Dream Skin 是非 OpenAI 官方项目，通过本地回环 DevTools 协议工作，不修改官方 Codex 应用包；商标、官方应用和用户自行导入的图片不在该许可范围内。
 
+### DreamSkin.cc 精选主题
+
+在线版会从 `https://api.dreamskin.cc/v1/themes/{versionId}/download` 下载，离线版携带相同的已解压主题目录；选择主题库时，离线安装器还会在安装阶段尝试从 `https://api.dreamskin.cc/v1/themes?sort=popular&limit=24` 缓存可选主题清单，失败时不影响本地安装。每个内置主题的版本 ID、作者、声明许可证、平台、下载量和归档 SHA-256 都记录在 `Resources/dream-skin/catalog.json`；安装器只接受清单中的固定主题，且只安装同时声明支持 Windows/macOS 的主题。
+
+本次冻结的 10 套主题为：悟空（WUKONG，JamesOpsLab，MIT）、清透定制（axdlee，CC BY 4.0）、灵感小宇宙（axdlee，CC BY 4.0）、雷姆酱（Christopher，MIT）、阳光少年（孔航，MIT）、渔女（Christopher，MIT）、山海异闻（axdlee，CC BY 4.0）、灵宠奇旅（axdlee，CC BY 4.0）、运维值守（axdlee，CC BY 4.0）和星穹机甲（axdlee，CC BY 4.0）。这些条目按 Gallery 的 popular 列表筛选，并排除了 Personal Use、CC BY-NC、All Rights Reserved 或平台不兼容的条目；主题图片和 Safe CSS 的权利仍以各主题包内的 `manifest.json` 与作者声明为准。
+
 ## Codex 插件
 
 安装器管理以下插件；各平台实际离线携带的范围见下文，具体版本、来源和插件自行声明的许可证会在构建时追加到最终说明：

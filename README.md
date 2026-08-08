@@ -53,7 +53,7 @@
 
 - **Codex 桌面版**：由官方来源下载，不在本仓库重复打包。
 - **Codex++**：随引导流程安装，减少手动配置步骤。
-- **Codex Dream Skin**：在线版与离线版均提供同一份 v1.5.11 预设；安装时可选择 `Gothic Void Crusade`，也可保留官方默认外观。
+- **Codex Dream Skin**：在线版与离线版均提供 v1.5.11、Gothic Void Crusade，以及 10 套从 DreamSkin.cc Gallery 按热度筛选的跨平台精选主题。
 - **211 个科研 Skills**：在线版与离线版都预装 Nature Skills、Scientific Agent Skills 和 Research Skills。
 - **跨平台支持**：一个项目同时覆盖 Windows 和 macOS。
 - **已有安装保护**：检测到健康的 Codex 时优先复用，避免无意义地重复安装或降级。
@@ -84,7 +84,11 @@ Uni-codex 也可以配合以下工具形成连续科研工作流：
 
 ### 预设皮肤
 
-安装界面中的推荐项是 Codex Dream Skin 的公开可再分发预设 `Gothic Void Crusade`。Windows 和 macOS 都固定使用上游 v1.5.11，并在构建或安装时校验 SHA-256；不想改变外观时选择“官方默认外观”。Dream Skin 是非 OpenAI 官方项目，采用其上游 MIT 许可，且不会修改官方 Codex 安装包本体。
+安装界面提供三种选择：`Gothic Void Crusade`、`DreamSkin.cc 主题库（安装时连接 API）`和“官方默认外观”。前两项会预装同一份精选主题目录；选择主题库时，离线安装器也会尝试连接 DreamSkin.cc API 缓存可用主题清单，并自动打开 [DreamSkin.cc Gallery](https://dreamskin.cc/gallery)，可继续浏览、试用和下载 200+ 个社区主题。网络不可用时仍可使用包内主题。
+
+离线包把 10 套精选主题直接放入本地主题库；在线包在安装时从 DreamSkin.cc 固定 API 下载并逐个校验 SHA-256。精选清单、作者、声明许可证和冻结哈希见 [`Resources/dream-skin/catalog.json`](Resources/dream-skin/catalog.json)。主题素材仍受各自作者声明的许可证约束，详见 [第三方许可说明](Resources/licenses/Third-Party-Notices.md)。
+
+Dream Skin 是非 OpenAI 官方项目，采用其上游 MIT 软件许可，且不会修改官方 Codex 安装包本体。
 
 ## 常见问题
 

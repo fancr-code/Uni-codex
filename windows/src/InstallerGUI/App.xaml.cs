@@ -131,7 +131,9 @@ public partial class App : Application
                     new CapabilityStatus("Codex Dream Skin",
                         request.DreamSkinPreset == DreamSkinInstaller.NonePreset
                             ? "未启用（官方默认外观）"
-                            : "已安装（Gothic Void Crusade）")
+                            : request.DreamSkinPreset == DreamSkinInstaller.GalleryPreset
+                                ? "已安装（10 套精选主题，可在线继续选择）"
+                                : "已安装（Gothic Void Crusade + 10 套精选主题）")
                 };
                 return new InstallerUiResult(
                     result.Succeeded,

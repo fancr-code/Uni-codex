@@ -213,6 +213,10 @@ UNICODEX_SKILL_MANIFEST="$ROOT/skills/collections.json" \
 dream_skin_dmg="$(download_dream_skin)"
 /bin/cp "$dream_skin_dmg" \
   "$RESOURCES_DIR/dream-skin/CodexDreamSkin-v${DREAM_SKIN_VERSION}.dmg"
+/bin/cp "$ROOT/Resources/dream-skin/catalog.json" \
+  "$RESOURCES_DIR/dream-skin/catalog.json"
+/usr/bin/ditto "$ROOT/Resources/dream-skin/community-themes" \
+  "$RESOURCES_DIR/dream-skin/community-themes"
 /bin/mkdir -p "$RESOURCES_DIR/CodexPlusPlus-Compatibility"
 /bin/cp "$CODEX_PLUS_PATCH" \
   "$RESOURCES_DIR/CodexPlusPlus-Compatibility/v1.2.44-cross-provider-history.patch"

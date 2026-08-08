@@ -8,6 +8,30 @@ CODEX_PLUS_REPOSITORY='BigPizzaV3/CodexPlusPlus'
 DREAM_SKIN_VERSION='1.5.11'
 DREAM_SKIN_URL="https://github.com/Fei-Away/Codex-Dream-Skin/releases/download/v${DREAM_SKIN_VERSION}/CodexDreamSkin-v${DREAM_SKIN_VERSION}.dmg"
 DREAM_SKIN_SHA256='755ed9b8189193ec4be3d69c6625a10910ea8b33718465b2f1e000c5ccbdcba1'
+DREAM_SKIN_THEME_IDS=(
+  'ver_ab667004dad5bfec326d'
+  'ver_6fac938806981a73cb51'
+  'ver_f2b255d03e6ac7f91ada'
+  'ver_a5a7c185610e6ccee928'
+  'ver_4367ae5c3ef91daf8efa'
+  'ver_1f00673afb67fd30f91e'
+  'ver_5c32fdc7b685ede6fd07'
+  'ver_2b3bc79cfe2e5141c7a2'
+  'ver_4e1216c88d5cb2a39c53'
+  'ver_dd3882239f93b014ba65'
+)
+DREAM_SKIN_THEME_SHA256=(
+  'b2892300bdfb1229a092c140c5fd5de41fa27b97db6ec7e827c3ae0f9d75af44'
+  '00f6adab28a022bad16c5ff8139dd3b11a59415ad7912034dff372b68baa56ef'
+  'fcbdc5efebbf43db7cdbbe9ae213b71da6daa33ef59e36e1b8567a6a20cabdc0'
+  '607c5c6bc6989aa5113446a5beac3fdecff4dcc8123b430c242b9827ab2c0cd5'
+  '5b7e72fa46f9da7a42be45a9689342c1506158e19f40a8c8fe9f747b707195cc'
+  '058ab04d118bd66da7be082ebd8dba81dd0a285e6b68b356287ff870caff9ff9'
+  '2c820302ab365aa364b8aed2c6e5395ba3e1f6baec9d06ee04c68c6e699e8b67'
+  'a1c7e626121cf32693f2ec46dceaa8e1592bdb054c25a9ae50daf87710223996'
+  'cd6c95bfe5bf6079ef450c3c552ad0f52fafe594aa16196ce8645d9ad7916e67'
+  '20bd5ef48ad62ebbf6e35810399c7b86986a7594468a8b507188a13dbbec5b3c'
+)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORK_ROOT="$(/usr/bin/mktemp -d "${TMPDIR:-/tmp}/uni-codex.XXXXXX")"
 MOUNTS=()
@@ -24,7 +48,7 @@ trap cleanup EXIT
 download() {
   local url="$1" destination="$2"
   case "$url" in
-    https://persistent.oaistatic.com/*|https://github.com/*|https://objects.githubusercontent.com/*|https://*.githubusercontent.com/*) ;;
+    https://persistent.oaistatic.com/*|https://github.com/*|https://objects.githubusercontent.com/*|https://*.githubusercontent.com/*|https://api.dreamskin.cc/*) ;;
     *) printf '拒绝不受信任的下载源：%s\n' "$url" >&2; exit 65 ;;
   esac
   /usr/bin/curl --fail --location --retry 3 --connect-timeout 20 --max-time 1800 \
@@ -44,14 +68,85 @@ choose_dream_skin() {
   if [[ -n "${UNICODEX_DREAM_SKIN_PRESET:-}" ]]; then
     DREAM_SKIN_PRESET="$UNICODEX_DREAM_SKIN_PRESET"
   else
-    printf '\n选择预设皮肤：\n  1) Gothic Void Crusade（推荐）\n  2) 官方默认外观（不启用 Dream Skin）\n请输入编号 [1]: '
+    printf '\n选择预设皮肤：\n  1) Gothic Void Crusade（推荐）\n  2) DreamSkin.cc 主题库（安装时连接 API）\n  3) 官方默认外观（不启用 Dream Skin）\n请输入编号 [1]: '
     read -r choice || choice=1
-    [[ "$choice" == 2 ]] && DREAM_SKIN_PRESET='none' || DREAM_SKIN_PRESET='preset-gothic-void-crusade'
+    case "$choice" in
+      2) DREAM_SKIN_PRESET='gallery' ;;
+      3) DREAM_SKIN_PRESET='none' ;;
+      *) DREAM_SKIN_PRESET='preset-gothic-void-crusade' ;;
+    esac
   fi
   case "$DREAM_SKIN_PRESET" in
-    preset-gothic-void-crusade|none) ;;
+    preset-gothic-void-crusade|gallery|none) ;;
     *) printf '不支持的 Dream Skin 预设：%s\n' "$DREAM_SKIN_PRESET" >&2; exit 64 ;;
   esac
+}
+
+seed_downloaded_theme() {
+  local archive="$1"
+  local themes_root="$HOME/Library/Application Support/CodexDreamSkinStudio/themes"
+  /usr/bin/python3 - "$archive" "$themes_root" <<'PY'
+import json
+import pathlib
+import shutil
+import sys
+import tempfile
+import zipfile
+
+archive = pathlib.Path(sys.argv[1]).resolve()
+themes_root = pathlib.Path(sys.argv[2]).resolve()
+with zipfile.ZipFile(archive) as package:
+    entries = [item for item in package.infolist() if not item.is_dir()]
+    if len(entries) > 32:
+        raise SystemExit("theme archive has too many entries")
+    for item in entries:
+        name = pathlib.PurePosixPath(item.filename)
+        if name.is_absolute() or ".." in name.parts or len(name.parts) != 1:
+            raise SystemExit("theme archive contains an unsafe path")
+    try:
+        manifest = json.loads(package.read("manifest.json"))
+    except Exception as error:
+        raise SystemExit(f"invalid theme manifest: {error}")
+    theme_id = str(manifest.get("themeId", ""))
+    if not theme_id or not all(c.isalnum() or c in "._-" for c in theme_id):
+        raise SystemExit("invalid theme id")
+    if "macos" not in manifest.get("platforms", []):
+        raise SystemExit("theme does not support macOS")
+    required = {"manifest.json", "theme.json", "theme.css"}
+    if not required.issubset({item.filename for item in entries}):
+        raise SystemExit("theme archive is missing required files")
+    themes_root.mkdir(parents=True, exist_ok=True)
+    temporary = pathlib.Path(tempfile.mkdtemp(prefix=f".{theme_id}.", dir=themes_root))
+    try:
+        for item in entries:
+            destination = temporary / pathlib.PurePosixPath(item.filename).name
+            with package.open(item) as source, destination.open("wb") as target:
+                shutil.copyfileobj(source, target)
+        destination = themes_root / theme_id
+        if destination.is_symlink() or destination.is_file():
+            destination.unlink()
+        elif destination.exists():
+            shutil.rmtree(destination)
+        temporary.rename(destination)
+    finally:
+        if temporary.exists():
+            shutil.rmtree(temporary)
+PY
+}
+
+download_community_themes() {
+  local index id archive
+  local themes_root="$HOME/Library/Application Support/CodexDreamSkinStudio/themes"
+  /bin/mkdir -p "$themes_root"
+  for index in "${!DREAM_SKIN_THEME_IDS[@]}"; do
+    id="${DREAM_SKIN_THEME_IDS[$index]}"
+    archive="$WORK_ROOT/$id.zip"
+    download_verified \
+      "https://api.dreamskin.cc/v1/themes/$id/download" \
+      "$archive" "${DREAM_SKIN_THEME_SHA256[$index]}"
+    seed_downloaded_theme "$archive"
+  done
+  printf '已下载并预装 %d 套 DreamSkin.cc 精选主题。\n' "${#DREAM_SKIN_THEME_IDS[@]}"
 }
 
 mount_dmg() {
@@ -123,11 +218,13 @@ done
 /usr/bin/hdiutil detach "$codex_plus_mount" >/dev/null
 
 choose_dream_skin
-if [[ "$DREAM_SKIN_PRESET" == 'preset-gothic-void-crusade' ]]; then
-  printf '正在安装 Codex Dream Skin（Gothic Void Crusade）…\n'
+if [[ "$DREAM_SKIN_PRESET" != 'none' ]]; then
+  printf '正在安装 Codex Dream Skin，并下载 10 套 DreamSkin.cc 精选主题…\n'
   dream_skin_dmg="$WORK_ROOT/CodexDreamSkin-v${DREAM_SKIN_VERSION}.dmg"
   download_verified "$DREAM_SKIN_URL" "$dream_skin_dmg" "$DREAM_SKIN_SHA256"
   install_app_from_dmg "$dream_skin_dmg" 'CodexDreamSkin.app'
+  download_community_themes
+  [[ "$DREAM_SKIN_PRESET" == 'gallery' ]] && /usr/bin/open 'https://dreamskin.cc/gallery' || true
 else
   printf '保留官方默认外观。\n'
 fi

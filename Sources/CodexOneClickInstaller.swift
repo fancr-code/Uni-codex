@@ -247,10 +247,12 @@ final class InstallerViewController: NSViewController, NSTextFieldDelegate {
 
         skinPopup.addItem(withTitle: "Gothic Void Crusade（推荐）")
         skinPopup.lastItem?.representedObject = "preset-gothic-void-crusade"
+        skinPopup.addItem(withTitle: "DreamSkin.cc 主题库（安装时连接 API）")
+        skinPopup.lastItem?.representedObject = "gallery"
         skinPopup.addItem(withTitle: "官方默认外观（不启用 Dream Skin）")
         skinPopup.lastItem?.representedObject = "none"
         skinPopup.selectItem(at: 0)
-        skinPopup.toolTip = "预装 Codex Dream Skin；也可保留官方默认外观。"
+        skinPopup.toolTip = "预装 10 套精选主题；安装时连接 DreamSkin.cc API，并打开主题库供继续选择。"
 
         configGrid = NSGridView(views: [
             [formLabel("服务商"), providerPopup, NSGridCell.emptyContentView],

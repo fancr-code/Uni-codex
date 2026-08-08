@@ -226,6 +226,16 @@ try {
     New-Item -ItemType Directory -Path $appStage, $guideStage, $licenseStage, $skillsStage, $dreamSkinStage, $temporaryDist |
         Out-Null
     Resolve-DreamSkinSetup $DreamSkinSetupPath (Join-Path $dreamSkinStage "CodexDreamSkin-Setup-v$DreamSkinVersion.exe") ([bool]$FixtureMode)
+    $communityThemesSource = Resolve-SafeDirectory (
+        Join-Path $RepositoryRoot 'Resources/dream-skin/community-themes') 'DreamSkin.cc community themes'
+    $communityThemes = @(Get-ChildItem -LiteralPath $communityThemesSource -Directory -Force)
+    if ($communityThemes.Count -ne 10) {
+        Fail "Expected 10 DreamSkin.cc community themes, found $($communityThemes.Count)"
+    }
+    Copy-Item -Path (Join-Path $communityThemesSource '*') `
+        -Destination (Join-Path $dreamSkinStage 'themes') -Recurse -Force
+    Copy-Item -LiteralPath (Join-Path $RepositoryRoot 'Resources/dream-skin/catalog.json') `
+        -Destination (Join-Path $dreamSkinStage 'catalog.json') -Force
     & $skillInstaller -ManifestPath $skillManifest -DestinationRoot $skillsStage -PrepareBundle
     Copy-Item -LiteralPath $skillInstaller -Destination $stage
     Copy-Item -LiteralPath $skillManifest -Destination (Join-Path $stage 'skill-collections.json')

@@ -1,0 +1,46 @@
+{
+  "packageVersion": 1,
+  "themeId": "fisher-girl",
+  "version": "0.1.0",
+  "skinApiVersion": 1,
+  "minClientVersion": "0.1.0",
+  "platforms": [
+    "macos",
+    "windows"
+  ],
+  "capabilities": [
+    "background",
+    "tokens",
+    "safe-css"
+  ],
+  "publisher": {
+    "id": "Christopher",
+    "displayName": "Christopher"
+  },
+  "license": "MIT",
+  "provenance": {
+    "aiGenerated": false,
+    "summary": "开源图片"
+  },
+  "files": [
+    {
+      "path": "theme.json",
+      "mediaType": "application/json",
+      "bytes": 502,
+      "sha256": "85f0838a3e633e16a9a5ebc86a122827fc21124554f6bbda2dfdd3dbf8ef6269"
+    },
+    {
+      "path": "background.jpg",
+      "mediaType": "image/jpeg",
+      "bytes": 3869095,
+      "sha256": "f52239ba3b329ce8afda4ac37f645bdb9f04d47e6767b6c36c3205145265fb32"
+    },
+    {
+      "path": "theme.css",
+      "mediaType": "text/css",
+      "bytes": 273,
+      "sha256": "3f5401920639e102d2e3871057f2bb68d290a5ca5f5a14c9e01cb2ff7be088e3"
+    }
+  ],
+  "createdAt": "2026-07-28T02:49:02.328Z"
+}

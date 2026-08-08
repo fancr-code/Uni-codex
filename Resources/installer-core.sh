@@ -1837,6 +1837,72 @@ install_script_market() {
   fi
 }
 
+seed_bundled_community_themes() {
+  local source_root="$SCRIPT_DIR/dream-skin/community-themes"
+  local destination_root="$HOME/Library/Application Support/CodexDreamSkinStudio/themes"
+  [[ -d "$source_root" && ! -L "$source_root" ]] || return 66
+  /bin/mkdir -p "$destination_root" || return $?
+  local count=0 source id entry
+  for source in "$source_root"/*/; do
+    [[ -d "$source" && ! -L "$source" ]] || continue
+    id="$(/usr/bin/basename "$source")"
+    [[ "$id" =~ ^[A-Za-z0-9._-]+$ ]] || return 65
+    [[ -f "$source/manifest.json" && -f "$source/theme.json" ]] || return 66
+    if /usr/bin/find "$source" -mindepth 1 -maxdepth 1 -type l -print -quit | /usr/bin/grep -q .; then
+      return 65
+    fi
+    local destination="$destination_root/$id"
+    /bin/mkdir -p "$destination" || return $?
+    for entry in "$source"*; do
+      [[ -f "$entry" && ! -L "$entry" ]] || continue
+      /bin/cp "$entry" "$destination/" || return $?
+    done
+    /bin/chmod 700 "$destination" || return $?
+    /bin/chmod 600 "$destination"/* 2>/dev/null || true
+    count=$((count + 1))
+  done
+  [[ "$count" -eq 10 ]] || return 66
+  printf '%s' "$count"
+}
+
+refresh_dreamskin_gallery_api() {
+  local destination_root="$HOME/Library/Application Support/CodexDreamSkin"
+  local destination="$destination_root/gallery-api-catalog.json"
+  local temporary="$destination_root/.gallery-api-catalog.json.tmp.$$"
+  /bin/mkdir -p "$destination_root" || return 1
+  if ! /usr/bin/curl --fail --location --retry 2 --connect-timeout 10 --max-time 30 \
+    --user-agent 'Uni-codex DreamSkin gallery connector' \
+    --header 'Accept: application/json' \
+    --output "$temporary" \
+    'https://api.dreamskin.cc/v1/themes?sort=popular&limit=24'; then
+    /bin/rm -f "$temporary"
+    return 1
+  fi
+  if ! /usr/bin/python3 - "$temporary" <<'PY'
+import json
+import pathlib
+import sys
+
+try:
+    payload = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+    items = payload.get("items")
+    if not isinstance(items, list) or not items:
+        raise ValueError("DreamSkin.cc API returned no themes")
+except Exception:
+    raise SystemExit(1)
+PY
+  then
+    /bin/rm -f "$temporary"
+    return 1
+  fi
+  /bin/mv -f "$temporary" "$destination" || {
+    /bin/rm -f "$temporary"
+    return 1
+  }
+  /bin/chmod 600 "$destination" || return 1
+  return 0
+}
+
 install_dream_skin() {
   local preset
   preset="$(/usr/bin/plutil -extract dreamSkinPreset raw -o - "$REQUEST_FILE" 2>/dev/null || true)"
@@ -1845,7 +1911,7 @@ install_dream_skin() {
     emit_event dream_skin_skipped 0.84 '保留官方默认外观' null
     return 0
   fi
-  [[ "$preset" == 'preset-gothic-void-crusade' ]] || {
+  [[ "$preset" == 'preset-gothic-void-crusade' || "$preset" == 'gallery' ]] || {
     emit_event error null 'unsupported Dream Skin preset' '"invalid_dream_skin_preset"'
     return 65
   }
@@ -1854,7 +1920,11 @@ install_dream_skin() {
     emit_event error null 'offline package is missing the Dream Skin DMG' '"missing_dream_skin_payload"'
     return 66
   }
-  emit_event dream_skin_installing 0.84 '正在安装 Codex Dream Skin（Gothic Void Crusade）' null
+  if [[ "$preset" == 'gallery' ]]; then
+    emit_event dream_skin_installing 0.84 '正在安装 Codex Dream Skin，并准备 10 套精选主题' null
+  else
+    emit_event dream_skin_installing 0.84 '正在安装 Codex Dream Skin（Gothic Void Crusade）' null
+  fi
   local mount="$({ mount_dmg "$dmg"; })" || return $?
   local source="$mount/CodexDreamSkin.app"
   [[ -d "$source" && ! -L "$source" ]] || {
@@ -1879,7 +1949,19 @@ on run argv
 end run
 APPLESCRIPT
   fi
-  emit_event dream_skin_installed 0.87 'Codex Dream Skin 已安装（Gothic Void Crusade）' null
+  local seeded_count
+  seeded_count="$(seed_bundled_community_themes)" || {
+    emit_event error null 'DreamSkin.cc 精选主题载荷校验失败' '"invalid_dream_skin_themes"'
+    return 66
+  }
+  local gallery_api_status='未连接 DreamSkin.cc API'
+  if [[ "$preset" == 'gallery' ]]; then
+    if refresh_dreamskin_gallery_api; then
+      gallery_api_status='已连接 DreamSkin.cc API'
+    fi
+    /usr/bin/open 'https://dreamskin.cc/gallery' >/dev/null 2>&1 || true
+  fi
+  emit_event dream_skin_installed 0.87 "Codex Dream Skin 已安装（Gothic Void Crusade，已预装 ${seeded_count} 套精选主题；${gallery_api_status}）" null
 }
 
 install_skill_collections() {
