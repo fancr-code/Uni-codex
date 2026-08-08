@@ -41,6 +41,7 @@ CHATGPT_BUNDLE_ID=""
 CHATGPT_TEAM_ID=""
 CODEX_PLUS_VERSION=""
 CODEX_PLUS_COMPATIBILITY_REVISION=""
+DREAM_SKIN_VERSION="1.5.11"
 INSTALLED_CHATGPT_VERSION=""
 ROLLBACK_FAILURE_REASON=""
 ROLLBACK_FAILURE_EXIT_STATUS=70
@@ -1836,6 +1837,51 @@ install_script_market() {
   fi
 }
 
+install_dream_skin() {
+  local preset
+  preset="$(/usr/bin/plutil -extract dreamSkinPreset raw -o - "$REQUEST_FILE" 2>/dev/null || true)"
+  [[ -n "$preset" ]] || preset='preset-gothic-void-crusade'
+  if [[ "$preset" == 'none' ]]; then
+    emit_event dream_skin_skipped 0.84 '保留官方默认外观' null
+    return 0
+  fi
+  [[ "$preset" == 'preset-gothic-void-crusade' ]] || {
+    emit_event error null 'unsupported Dream Skin preset' '"invalid_dream_skin_preset"'
+    return 65
+  }
+  local dmg="$SCRIPT_DIR/dream-skin/CodexDreamSkin-v${DREAM_SKIN_VERSION}.dmg"
+  [[ -f "$dmg" && ! -L "$dmg" ]] || {
+    emit_event error null 'offline package is missing the Dream Skin DMG' '"missing_dream_skin_payload"'
+    return 66
+  }
+  emit_event dream_skin_installing 0.84 '正在安装 Codex Dream Skin（Gothic Void Crusade）' null
+  local mount="$({ mount_dmg "$dmg"; })" || return $?
+  local source="$mount/CodexDreamSkin.app"
+  [[ -d "$source" && ! -L "$source" ]] || {
+    emit_event error null 'Dream Skin DMG does not contain CodexDreamSkin.app' '"invalid_dream_skin_payload"'
+    return 66
+  }
+  /usr/bin/codesign --verify --deep --strict "$source" >/dev/null 2>&1 || {
+    emit_event error null 'Dream Skin app signature validation failed' '"dream_skin_signature_failed"'
+    return 66
+  }
+  local target="$APPLICATIONS_DIR/CodexDreamSkin.app"
+  if [[ -w "$APPLICATIONS_DIR" ]]; then
+    [[ ! -e "$target" || ! -L "$target" ]] || return 65
+    /bin/rm -R "$target" 2>/dev/null || true
+    /usr/bin/ditto "$source" "$target" || return $?
+  else
+    /usr/bin/osascript - "$source" "$target" <<'APPLESCRIPT'
+on run argv
+  set sourcePath to item 1 of argv
+  set targetPath to item 2 of argv
+  do shell script "/bin/rm -rf " & quoted form of targetPath & " && /usr/bin/ditto " & quoted form of sourcePath & " " & quoted form of targetPath with administrator privileges
+end run
+APPLESCRIPT
+  fi
+  emit_event dream_skin_installed 0.87 'Codex Dream Skin 已安装（Gothic Void Crusade）' null
+}
+
 install_skill_collections() {
   [[ -x "$SCRIPT_DIR/install-skill-collections.sh" \
      && -f "$SCRIPT_DIR/skill-collections.json" \
@@ -2400,6 +2446,7 @@ install_command() {
   install_script_market || return $?
   emit_event installing_skills 0.81 'installing 211 research skills' null
   install_skill_collections || return $?
+  install_dream_skin || return $?
   if [[ "$TEST_MODE" == "1" && "${FAIL_AFTER_SCRIPTS:-0}" == "1" ]]; then
     emit_event install_failed null 'injected failure after script deployment' '"injected_script_failure"'
     return 75

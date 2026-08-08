@@ -4,7 +4,9 @@ param(
     [switch] $SkipCodex,
     [switch] $SkipCodexPlusPlus,
     [switch] $Quiet,
-    [string] $BundledCodexPlusPlus = ''
+    [string] $BundledCodexPlusPlus = '',
+    [ValidateSet('preset-gothic-void-crusade', 'none')]
+    [string] $DreamSkinPreset = 'preset-gothic-void-crusade'
 )
 
 Set-StrictMode -Version Latest
@@ -12,6 +14,9 @@ $ErrorActionPreference = 'Stop'
 $ProductId = '9PLM9XGG6VKS'
 $OfficialWindowsInstaller = 'https://get.microsoft.com/installer/download/9PLM9XGG6VKS?cid=website_cta_psi'
 $CodexPlusRepository = 'BigPizzaV3/CodexPlusPlus'
+$DreamSkinVersion = '1.5.11'
+$DreamSkinInstallerUrl = "https://github.com/Fei-Away/Codex-Dream-Skin/releases/download/v$DreamSkinVersion/CodexDreamSkin-Setup-v$DreamSkinVersion.exe"
+$DreamSkinInstallerSha256 = 'b63aab7339fddd677db48d83b3a1b2f465851b886640989bce6b649cba407934'
 $WorkRoot = Join-Path ([IO.Path]::GetTempPath()) "uni-codex-$([Guid]::NewGuid().ToString('N'))"
 
 function Write-Step([string] $Message) {
@@ -118,6 +123,22 @@ function Install-CodexPlusPlus {
     if ($process.ExitCode -ne 0) { throw "Codex++ installer failed: $($process.ExitCode)" }
 }
 
+function Install-DreamSkin {
+    if ($DreamSkinPreset -eq 'none') {
+        Write-Step 'Keeping the official Codex appearance'
+        return
+    }
+    $installer = Join-Path $WorkRoot "CodexDreamSkin-Setup-v$DreamSkinVersion.exe"
+    Write-Step "Installing Codex Dream Skin v$DreamSkinVersion (Gothic Void Crusade)"
+    Invoke-VerifiedDownload ([uri]$DreamSkinInstallerUrl) $installer "sha256:$DreamSkinInstallerSha256"
+    $bytes = [IO.File]::ReadAllBytes($installer)
+    if ($bytes.Length -lt 2 -or $bytes[0] -ne 0x4d -or $bytes[1] -ne 0x5a) {
+        throw 'Codex Dream Skin download is not a PE executable'
+    }
+    $process = Start-Process -FilePath $installer -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-' -Wait -PassThru
+    if ($process.ExitCode -ne 0) { throw "Codex Dream Skin installer failed: $($process.ExitCode)" }
+}
+
 function Install-SkillCollections {
     $installer = Join-Path $PSScriptRoot 'Install-SkillCollections.ps1'
     $manifest = Join-Path $PSScriptRoot 'skills/collections.json'
@@ -132,6 +153,7 @@ try {
     New-Item -ItemType Directory -Path $WorkRoot -Force | Out-Null
     Install-CodexDesktop
     Install-CodexPlusPlus
+    Install-DreamSkin
     Install-SkillCollections
     Write-Step 'Uni-codex installation completed'
 } finally {

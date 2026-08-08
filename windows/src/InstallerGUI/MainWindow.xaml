@@ -224,6 +224,31 @@
                                        FontSize="11"
                                        Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
                         </Grid>
+
+                        <Grid x:Name="DreamSkinRow" Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="180"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="{DynamicResource DreamSkinLabel}"
+                                       Style="{StaticResource FieldLabelStyle}"/>
+                            <ComboBox x:Name="DreamSkinComboBox"
+                                      Grid.Column="1"
+                                      ItemsSource="{Binding DreamSkinPresets}"
+                                      SelectedItem="{Binding SelectedDreamSkin}"
+                                      DisplayMemberPath="DisplayName"
+                                      Style="{StaticResource FieldControlStyle}"
+                                      TabIndex="7"/>
+                            <TextBlock Grid.Column="2"
+                                       Margin="12,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Text="{DynamicResource DreamSkinHint}"
+                                       TextWrapping="Wrap"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                        </Grid>
                     </StackPanel>
                 </Border>
 

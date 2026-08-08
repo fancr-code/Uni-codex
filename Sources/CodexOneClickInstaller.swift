@@ -80,6 +80,7 @@ final class InstallerViewController: NSViewController, NSTextFieldDelegate {
     let authenticationModePopup = NSPopUpButton()
     let apiKeyField = NSSecureTextField()
     let modelPopup = NSPopUpButton()
+    let skinPopup = NSPopUpButton()
     let refreshModelsButton = NSButton(title: "刷新上游模型", target: nil, action: nil)
     let applyKeyButton = NSButton(title: "申请 API Key", target: nil, action: nil)
     let installButton = NSButton(title: "开始一键安装", target: nil, action: nil)
@@ -244,13 +245,21 @@ final class InstallerViewController: NSViewController, NSTextFieldDelegate {
         modelSourceLabel.lineBreakMode = .byTruncatingTail
         modelSourceLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
+        skinPopup.addItem(withTitle: "Gothic Void Crusade（推荐）")
+        skinPopup.lastItem?.representedObject = "preset-gothic-void-crusade"
+        skinPopup.addItem(withTitle: "官方默认外观（不启用 Dream Skin）")
+        skinPopup.lastItem?.representedObject = "none"
+        skinPopup.selectItem(at: 0)
+        skinPopup.toolTip = "预装 Codex Dream Skin；也可保留官方默认外观。"
+
         configGrid = NSGridView(views: [
             [formLabel("服务商"), providerPopup, NSGridCell.emptyContentView],
             [formLabel("Kimi 类型"), kimiTypePopup, NSGridCell.emptyContentView],
             [formLabel("登录模式"), authenticationModePopup, NSGridCell.emptyContentView],
             [formLabel("API Key"), apiKeyField, applyKeyButton],
             [formLabel("默认模型"), modelPopup, refreshModelsButton],
-            [NSGridCell.emptyContentView, modelSourceLabel, NSGridCell.emptyContentView]
+            [NSGridCell.emptyContentView, modelSourceLabel, NSGridCell.emptyContentView],
+            [formLabel("预设皮肤"), skinPopup, NSGridCell.emptyContentView]
         ])
         configGrid.columnSpacing = 10
         configGrid.rowSpacing = 8
@@ -261,7 +270,7 @@ final class InstallerViewController: NSViewController, NSTextFieldDelegate {
         kimiGridRow = configGrid.row(at: 1)
         kimiGridRow.isHidden = true
         [
-            providerPopup, kimiTypePopup, authenticationModePopup, apiKeyField, modelPopup,
+            providerPopup, kimiTypePopup, authenticationModePopup, apiKeyField, modelPopup, skinPopup,
             applyKeyButton, refreshModelsButton
         ]
             .forEach { $0.heightAnchor.constraint(equalToConstant: 28).isActive = true }
@@ -568,7 +577,9 @@ final class InstallerViewController: NSViewController, NSTextFieldDelegate {
             defaultModel: selectedModel,
             availableModels: models,
             modelSource: state.modelSource(),
-            authenticationMode: selectedAuthenticationMode
+            authenticationMode: selectedAuthenticationMode,
+            dreamSkinPreset: (skinPopup.selectedItem?.representedObject as? String)
+                ?? "preset-gothic-void-crusade"
         )
         cancellationRequested = false
         state.setPhase(.installing(0, "准备安装…"))
@@ -876,6 +887,7 @@ final class InstallerViewController: NSViewController, NSTextFieldDelegate {
         authenticationModePopup.isEnabled = !isBusy
         apiKeyField.isEnabled = !isBusy
         modelPopup.isEnabled = !isBusy
+        skinPopup.isEnabled = !isBusy
         refreshModelsButton.isEnabled = !isBusy && state.isPreflightReady && hasValidAPIKey
         applyKeyButton.isEnabled = !isBusy
         installButton.isEnabled = !isBusy

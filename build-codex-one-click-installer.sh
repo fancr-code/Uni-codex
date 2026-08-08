@@ -21,6 +21,9 @@ ICON_FILE="$ROOT/Resources/AppIcon/AppIcon.icns"
 CODEX_PLUS_VERSION='1.2.44'
 CODEX_PLUS_COMPATIBILITY_REVISION='cross-provider-content-v1'
 CODEX_PLUS_PATCH="$ROOT/patches/CodexPlusPlus/v1.2.44-cross-provider-history.patch"
+DREAM_SKIN_VERSION='1.5.11'
+DREAM_SKIN_DMG_URL="https://github.com/Fei-Away/Codex-Dream-Skin/releases/download/v${DREAM_SKIN_VERSION}/CodexDreamSkin-v${DREAM_SKIN_VERSION}.dmg"
+DREAM_SKIN_DMG_SHA256='755ed9b8189193ec4be3d69c6625a10910ea8b33718465b2f1e000c5ccbdcba1'
 
 die() {
   printf 'build-codex-one-click-installer: %s\n' "$*" >&2
@@ -66,6 +69,21 @@ validate_payload_filesystem() {
     done; then
     exit 1
   fi
+}
+
+download_dream_skin() {
+  local destination="${DREAM_SKIN_DMG_OVERRIDE:-$BUILD_ROOT/CodexDreamSkin-v${DREAM_SKIN_VERSION}.dmg}"
+  if [[ -n "${DREAM_SKIN_DMG_OVERRIDE:-}" ]]; then
+    [[ -f "$destination" && ! -L "$destination" ]] || die "DREAM_SKIN_DMG_OVERRIDE is missing"
+  else
+    /usr/bin/curl --fail --location --retry 3 --connect-timeout 20 --max-time 1800 \
+      --output "$destination" "$DREAM_SKIN_DMG_URL"
+  fi
+  [[ -s "$destination" ]] || die "Dream Skin DMG is empty"
+  local actual
+  actual="$(/usr/bin/shasum -a 256 "$destination" | /usr/bin/awk '{print tolower($1)}')"
+  [[ "$actual" == "$DREAM_SKIN_DMG_SHA256" ]] || die "Dream Skin DMG SHA-256 mismatch"
+  printf '%s' "$destination"
 }
 validate_payload_filesystem "$PAYLOAD_ROOT"
 
@@ -191,6 +209,10 @@ UNICODEX_SKILL_MANIFEST="$ROOT/skills/collections.json" \
   "$ROOT/scripts/install-skill-collections.sh"
 /bin/cp "$PAYLOAD_ROOT/model-catalog.json" "$RESOURCES_DIR/model-catalog.json"
 /bin/cp "$ROOT/Resources/plugin-catalog.json" "$RESOURCES_DIR/plugin-catalog.json"
+/bin/mkdir -p "$RESOURCES_DIR/dream-skin"
+dream_skin_dmg="$(download_dream_skin)"
+/bin/cp "$dream_skin_dmg" \
+  "$RESOURCES_DIR/dream-skin/CodexDreamSkin-v${DREAM_SKIN_VERSION}.dmg"
 /bin/mkdir -p "$RESOURCES_DIR/CodexPlusPlus-Compatibility"
 /bin/cp "$CODEX_PLUS_PATCH" \
   "$RESOURCES_DIR/CodexPlusPlus-Compatibility/v1.2.44-cross-provider-history.patch"

@@ -37,6 +37,7 @@ Source: "{#StageRoot}\licenses\*"; DestDir: "{code:GetContentDestination|license
 Source: "{#StageRoot}\skill-collections\*"; DestDir: "{code:GetContentDestination|skill-collections}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#StageRoot}\Install-SkillCollections.ps1"; DestDir: "{code:GetContentDestination|skills-installer}"; Flags: ignoreversion
 Source: "{#StageRoot}\skill-collections.json"; DestDir: "{code:GetContentDestination|skills-installer}"; Flags: ignoreversion
+Source: "{#StageRoot}\dream-skin\*"; DestDir: "{code:GetContentDestination|dream-skin}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Code]
 var
@@ -98,6 +99,8 @@ begin
   Executable := ExpandConstant('{code:GetContentDestination|app}\CodexOneClickInstaller.exe');
   Parameters := '--payload-root "' +
     ExpandConstant('{code:GetContentDestination|offline-payloads}') + '"';
+  Parameters := Parameters + ' --dream-skin-setup "' +
+    ExpandConstant('{code:GetContentDestination|dream-skin}\CodexDreamSkin-Setup-v1.5.11.exe') + '"';
   SmokeReport := ExpandConstant('{param:CODEXSMOKEREPORT|}');
   if SmokeReport <> '' then
   begin

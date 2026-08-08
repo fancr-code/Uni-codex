@@ -53,6 +53,7 @@
 
 - **Codex 桌面版**：由官方来源下载，不在本仓库重复打包。
 - **Codex++**：随引导流程安装，减少手动配置步骤。
+- **Codex Dream Skin**：在线版与离线版均提供同一份 v1.5.11 预设；安装时可选择 `Gothic Void Crusade`，也可保留官方默认外观。
 - **211 个科研 Skills**：在线版与离线版都预装 Nature Skills、Scientific Agent Skills 和 Research Skills。
 - **跨平台支持**：一个项目同时覆盖 Windows 和 macOS。
 - **已有安装保护**：检测到健康的 Codex 时优先复用，避免无意义地重复安装或降级。
@@ -80,6 +81,10 @@ Uni-codex 也可以配合以下工具形成连续科研工作流：
 
 三套合集合计 **211 个技能**。在线安装包在安装时获取锁定版本；离线安装包在构建时已将同一版本完整打包。安装器会保留用户自己维护的同名技能，不会静默覆盖。
 三套合集的 MIT 许可证会随技能一并保留在 `.codex/skills/.uni-codex-licenses/`。
+
+### 预设皮肤
+
+安装界面中的推荐项是 Codex Dream Skin 的公开可再分发预设 `Gothic Void Crusade`。Windows 和 macOS 都固定使用上游 v1.5.11，并在构建或安装时校验 SHA-256；不想改变外观时选择“官方默认外观”。Dream Skin 是非 OpenAI 官方项目，采用其上游 MIT 许可，且不会修改官方 Codex 安装包本体。
 
 ## 常见问题
 

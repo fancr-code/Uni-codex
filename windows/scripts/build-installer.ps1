@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 [CmdletBinding()]
 param(
     [string] $PayloadRoot = '',
@@ -8,6 +8,7 @@ param(
     [string] $InnoRoot = '',
     [string] $InnoInstallerPath = '',
     [string] $PublishRoot = '',
+    [string] $DreamSkinSetupPath = '',
     [switch] $FixtureMode,
     [switch] $VerifyInnoRuntimeVersion
 )
@@ -20,6 +21,9 @@ $InnoDownloadUrl =
     'https://github.com/jrsoftware/issrc/releases/download/is-7_0_2/innosetup-7.0.2-x64.exe'
 $InnoInstallerSha256 =
     '5ad54ca3def786f8f4212552e54cc6d8d61329e2d24a1cfee0571d42c2684ff1'
+$DreamSkinVersion = '1.5.11'
+$DreamSkinSetupUrl = "https://github.com/Fei-Away/Codex-Dream-Skin/releases/download/v$DreamSkinVersion/CodexDreamSkin-Setup-v$DreamSkinVersion.exe"
+$DreamSkinSetupSha256 = 'b63aab7339fddd677db48d83b3a1b2f465851b886640989bce6b649cba407934'
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $WindowsRoot = Split-Path -Parent $ScriptRoot
 $RepositoryRoot = Split-Path -Parent $WindowsRoot
@@ -84,6 +88,27 @@ function Invoke-Checked([string] $Description, [scriptblock] $Operation) {
     & $Operation
     if (-not $? -or $LASTEXITCODE -ne 0) {
         Fail "$Description failed with exit code $LASTEXITCODE"
+    }
+}
+function Resolve-DreamSkinSetup([string] $RequestedPath, [string] $Destination, [bool] $Fixture) {
+    if (-not [string]::IsNullOrWhiteSpace($RequestedPath)) {
+        if (-not (Test-Path -LiteralPath $RequestedPath -PathType Leaf)) {
+            Fail "Dream Skin setup is missing: $RequestedPath"
+        }
+        Copy-Item -LiteralPath $RequestedPath -Destination $Destination -Force
+    } elseif ($Fixture) {
+        [IO.File]::WriteAllBytes($Destination, [byte[]](0x4d, 0x5a, 0x55, 0x4e, 0x49, 0x2d, 0x43, 0x4f, 0x44, 0x45, 0x58))
+    } else {
+        Write-Host "Downloading pinned Codex Dream Skin v$DreamSkinVersion..."
+        Invoke-WebRequest -UseBasicParsing -MaximumRedirection 10 -Uri $DreamSkinSetupUrl -OutFile $Destination
+    }
+    $item = Get-Item -LiteralPath $Destination -Force
+    if ($item.Length -lt 2) { Fail 'Dream Skin setup is empty' }
+    $bytes = [IO.File]::ReadAllBytes($Destination)
+    if ($bytes[0] -ne 0x4d -or $bytes[1] -ne 0x5a) { Fail 'Dream Skin setup is not a PE executable' }
+    if (-not $Fixture -and [string]::IsNullOrWhiteSpace($RequestedPath)) {
+        $actual = (Get-FileHash -LiteralPath $Destination -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($actual -cne $DreamSkinSetupSha256) { Fail 'Codex Dream Skin setup SHA256 mismatch' }
     }
 }
 function Test-SameOrDescendant([string] $Candidate, [string] $Parent) {
@@ -191,14 +216,16 @@ $payloadStage = Join-Path $stage 'offline-payloads'
 $guideStage = Join-Path $stage 'guides'
 $licenseStage = Join-Path $stage 'licenses'
 $skillsStage = Join-Path $stage 'skill-collections'
+$dreamSkinStage = Join-Path $stage 'dream-skin'
 $skillInstaller = Join-Path $RepositoryRoot 'scripts/Install-SkillCollections.ps1'
 $skillManifest = Join-Path $RepositoryRoot 'skills/collections.json'
 $temporaryDist = Join-Path $outputParent (
     '.' + (Split-Path -Leaf $output) + '-' + [Guid]::NewGuid().ToString('N') + '.tmp')
 $backupDist = $null
 try {
-    New-Item -ItemType Directory -Path $appStage, $guideStage, $licenseStage, $skillsStage, $temporaryDist |
+    New-Item -ItemType Directory -Path $appStage, $guideStage, $licenseStage, $skillsStage, $dreamSkinStage, $temporaryDist |
         Out-Null
+    Resolve-DreamSkinSetup $DreamSkinSetupPath (Join-Path $dreamSkinStage "CodexDreamSkin-Setup-v$DreamSkinVersion.exe") ([bool]$FixtureMode)
     & $skillInstaller -ManifestPath $skillManifest -DestinationRoot $skillsStage -PrepareBundle
     Copy-Item -LiteralPath $skillInstaller -Destination $stage
     Copy-Item -LiteralPath $skillManifest -Destination (Join-Path $stage 'skill-collections.json')

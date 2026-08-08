@@ -122,6 +122,7 @@ struct InstallRequest: Codable, Equatable {
     let availableModels: [String]
     let modelSource: ModelSource
     let authenticationMode: AuthenticationMode
+    let dreamSkinPreset: String
 
     init(
         provider: ProviderKind,
@@ -129,7 +130,8 @@ struct InstallRequest: Codable, Equatable {
         defaultModel: String,
         availableModels: [String],
         modelSource: ModelSource = .offlineSnapshot,
-        authenticationMode: AuthenticationMode = .pureAPI
+        authenticationMode: AuthenticationMode = .pureAPI,
+        dreamSkinPreset: String = "preset-gothic-void-crusade"
     ) {
         self.provider = provider
         self.apiKey = apiKey
@@ -137,10 +139,11 @@ struct InstallRequest: Codable, Equatable {
         self.availableModels = availableModels
         self.modelSource = modelSource
         self.authenticationMode = authenticationMode
+        self.dreamSkinPreset = dreamSkinPreset
     }
 
     private enum CodingKeys: String, CodingKey {
-        case provider, apiKey, defaultModel, availableModels, modelSource, authenticationMode
+        case provider, apiKey, defaultModel, availableModels, modelSource, authenticationMode, dreamSkinPreset
     }
 
     init(from decoder: Decoder) throws {
@@ -154,6 +157,8 @@ struct InstallRequest: Codable, Equatable {
             AuthenticationMode.self,
             forKey: .authenticationMode
         ) ?? .pureAPI
+        dreamSkinPreset = try values.decodeIfPresent(String.self, forKey: .dreamSkinPreset)
+            ?? "preset-gothic-void-crusade"
     }
 }
 

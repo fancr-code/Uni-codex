@@ -13,6 +13,8 @@ public sealed record AuthenticationChoice(
     AuthenticationMode Value,
     string DisplayName);
 
+public sealed record DreamSkinChoice(string Value, string DisplayName);
+
 public sealed record CapabilityStatus(string Name, string Status);
 
 public sealed record OpenAIAuthorizationSnapshot(
@@ -209,6 +211,7 @@ public sealed class InstallerViewModel : INotifyPropertyChanged
     private readonly IExternalLauncher launcher;
     private ProviderChoice selectedProvider;
     private AuthenticationChoice selectedAuthentication;
+    private DreamSkinChoice selectedDreamSkin;
     private ModelDefinition? selectedModel;
     private string apiKey = string.Empty;
     private string statusText = "就绪";
@@ -245,8 +248,18 @@ public sealed class InstallerViewModel : INotifyPropertyChanged
                 AuthenticationMode.OpenAIAccountWithApi,
                 "API + OpenAI 账号（推荐）")
         ]);
+        DreamSkinPresets = Array.AsReadOnly(
+        [
+            new DreamSkinChoice(
+                "preset-gothic-void-crusade",
+                "Gothic Void Crusade（推荐）"),
+            new DreamSkinChoice(
+                "none",
+                "官方默认外观（不启用 Dream Skin）")
+        ]);
         selectedProvider = Providers[0];
         selectedAuthentication = AuthenticationModes[0];
+        selectedDreamSkin = DreamSkinPresets[0];
         authorization = backend.Authorization;
 
         InstallCommand = new AsyncCommand(
@@ -282,6 +295,8 @@ public sealed class InstallerViewModel : INotifyPropertyChanged
     public IReadOnlyList<ProviderChoice> Providers { get; }
 
     public IReadOnlyList<AuthenticationChoice> AuthenticationModes { get; }
+
+    public IReadOnlyList<DreamSkinChoice> DreamSkinPresets { get; }
 
     public ObservableCollection<ModelDefinition> Models { get; } = [];
 
@@ -333,6 +348,18 @@ public sealed class InstallerViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(AuthorizationRecommendation));
             OnPropertyChanged(nameof(OpenAIButtonText));
             NotifyCommandStates();
+        }
+    }
+
+    public DreamSkinChoice SelectedDreamSkin
+    {
+        get => selectedDreamSkin;
+        set
+        {
+            if (value is null || selectedDreamSkin == value)
+                return;
+            selectedDreamSkin = value;
+            OnPropertyChanged();
         }
     }
 
@@ -475,7 +502,8 @@ public sealed class InstallerViewModel : INotifyPropertyChanged
                     ModelSourceText == "已从服务商刷新"
                         ? ModelSource.UpstreamRefresh
                         : ModelSource.OfflineSnapshot,
-                    SelectedAuthentication.Value);
+                    SelectedAuthentication.Value,
+                    SelectedDreamSkin.Value);
                 IsCompletionVisible = false;
                 IsProgressIndeterminate = true;
                 Progress = 0;

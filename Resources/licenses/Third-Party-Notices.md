@@ -16,6 +16,12 @@
 
 许可证：AGPL-3.0-only。DMG 的“第三方许可与源码”目录同时包含与二进制版本一致的完整修订源码归档、`CODEXKIT-PATCH.md`、可单独审计的补丁文件和许可证文本。
 
+## Codex Dream Skin
+
+项目：https://github.com/Fei-Away/Codex-Dream-Skin
+
+Uni-codex 固定使用公开 Release v1.5.11 的 Windows Setup.exe 和 macOS DMG，安装前/构建时校验对应 SHA-256。该项目软件源代码采用 MIT License；公开预设 `Gothic Void Crusade` 是其上游声明可再分发的素材。Dream Skin 是非 OpenAI 官方项目，通过本地回环 DevTools 协议工作，不修改官方 Codex 应用包；商标、官方应用和用户自行导入的图片不在该许可范围内。
+
 ## Codex 插件
 
 安装器管理以下插件；各平台实际离线携带的范围见下文，具体版本、来源和插件自行声明的许可证会在构建时追加到最终说明：

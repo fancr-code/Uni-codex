@@ -11,6 +11,8 @@
     <sys:String x:Key="ApiKeyHint">输入仅用于本机配置，日志中会自动隐藏。</sys:String>
     <sys:String x:Key="ModelLabel">默认模型</sys:String>
     <sys:String x:Key="RefreshModels">刷新模型</sys:String>
+    <sys:String x:Key="DreamSkinLabel">预设皮肤</sys:String>
+    <sys:String x:Key="DreamSkinHint">预装 Codex Dream Skin；可随时改回官方默认外观。</sys:String>
     <sys:String x:Key="OpenAIRecommendation">默认使用所选国产模型 API。有 OpenAI 账号？推荐同时授权；模型仍使用当前 API 运行，并解锁全部官方插件入口与最佳兼容性。</sys:String>
     <sys:String x:Key="ResultHeading">安装结果</sys:String>
     <sys:String x:Key="ComponentColumn">组件</sys:String>

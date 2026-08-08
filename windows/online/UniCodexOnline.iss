@@ -25,4 +25,30 @@ Source: "{#SourcePath}\..\..\skills\collections.json"; DestDir: "{tmp}\Uni-codex
 Source: "{#CodexPlusSetup}"; DestDir: "{tmp}\Uni-codex"; DestName: "CodexPlusPlus-Setup.exe"; Flags: deleteafterinstall
 
 [Run]
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{tmp}\Uni-codex\Install-UniCodex.ps1"" -BundledCodexPlusPlus ""{tmp}\Uni-codex\CodexPlusPlus-Setup.exe"""; StatusMsg: "正在安装 Codex 与 Codex++..."; Flags: waituntilterminated
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{tmp}\Uni-codex\Install-UniCodex.ps1"" -BundledCodexPlusPlus ""{tmp}\Uni-codex\CodexPlusPlus-Setup.exe"" -DreamSkinPreset ""{code:GetDreamSkinPreset}"""; StatusMsg: "正在安装 Codex、Codex++ 与 Dream Skin..."; Flags: waituntilterminated
+
+[Code]
+var
+  DreamSkinPage: TInputOptionWizardPage;
+
+procedure InitializeWizard;
+begin
+  DreamSkinPage := CreateInputOptionPage(
+    wpWelcome,
+    '预设皮肤',
+    '选择 Codex 的预设外观',
+    'Uni-codex 会从官方 GitHub Release 安装 Codex Dream Skin。你可以稍后在托盘中切换主题。',
+    True,
+    False);
+  DreamSkinPage.Add('Gothic Void Crusade（推荐）');
+  DreamSkinPage.Add('官方默认外观（不启用 Dream Skin）');
+  DreamSkinPage.SelectedValueIndex := 0;
+end;
+
+function GetDreamSkinPreset(Param: String): String;
+begin
+  if (DreamSkinPage <> nil) and (DreamSkinPage.SelectedValueIndex = 1) then
+    Result := 'none'
+  else
+    Result := 'preset-gothic-void-crusade';
+end;

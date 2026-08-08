@@ -55,7 +55,8 @@ public sealed record InstallRequest(
     string DefaultModel,
     IReadOnlyList<string> AvailableModels,
     ModelSource ModelSource = ModelSource.OfflineSnapshot,
-    AuthenticationMode AuthenticationMode = AuthenticationMode.PureApi)
+    AuthenticationMode AuthenticationMode = AuthenticationMode.PureApi,
+    string DreamSkinPreset = "preset-gothic-void-crusade")
 {
     public static InstallRequest CreateDefault(
         SensitiveString apiKey,

@@ -90,10 +90,54 @@ public partial class App : Application
                     request,
                     progress,
                     cancellationToken);
+                if (!result.Succeeded)
+                {
+                    return new InstallerUiResult(
+                        result.Succeeded,
+                        result.FailureCode,
+                        engine.LastReportPath);
+                }
+                try
+                {
+                    await DreamSkinInstaller.InstallAsync(
+                        startup.DreamSkinSetupPath,
+                        request.DreamSkinPreset,
+                        progress,
+                        cancellationToken);
+                }
+                catch (FileNotFoundException)
+                {
+                    return new InstallerUiResult(
+                        false,
+                        "dream_skin_setup_missing",
+                        engine.LastReportPath);
+                }
+                catch (Exception error)
+                {
+                    progress.Report(new InstallerEvent(
+                        "dream_skin_failed",
+                        null,
+                        InstallerConfig.Redact(error.Message),
+                        "dream_skin_install_failed"));
+                    return new InstallerUiResult(
+                        false,
+                        "dream_skin_install_failed",
+                        engine.LastReportPath);
+                }
+                var capabilities = new[]
+                {
+                    new CapabilityStatus("Uni-Scholar", "已安装"),
+                    new CapabilityStatus("Research Kit", "已安装"),
+                    new CapabilityStatus("Codex Dream Skin",
+                        request.DreamSkinPreset == DreamSkinInstaller.NonePreset
+                            ? "未启用（官方默认外观）"
+                            : "已安装（Gothic Void Crusade）")
+                };
                 return new InstallerUiResult(
                     result.Succeeded,
                     result.FailureCode,
-                    engine.LastReportPath);
+                    engine.LastReportPath,
+                    capabilities);
             },
             cancellationToken => engine.RestoreLatestAsync(
                 new Progress<InstallerEvent>(_ => { }),

@@ -48,6 +48,7 @@ API Key、OAuth Token 与设备码不会写入安装报告；界面日志和报�
 - 预配置 3 个市场和 9 个插件；离线实装 2 个市场的 5 个可再分发插件（官方随包 4 个 + 公开仓库 GitHub 插件）。
 - `documents`、`pdf`、`spreadsheets`、`presentations` 由 Codex 官方运行时在联网且权限满足时供应；安装器不会把受限运行时内容伪装成离线插件。
 - 默认启用 `Context Used Meter` 与 `Codex Token Usage`，可在脚本市场关闭。
+- 安装界面提供 Codex Dream Skin 预设选择：默认是公开可再分发的 `Gothic Void Crusade`（v1.5.11），也可选择官方默认外观；Dream Skin 不修改 Codex 安装包本体。
 - 安装失败或取消时按事务报告回滚；报告不包含 API Key、OAuth Token、设备码或对话正文。
 
 ## 连续科研工作流：生态优势
@@ -64,7 +65,7 @@ API Key、OAuth Token 与设备码不会写入安装报告；界面日志和报�
 
 1. 核对系统版本、x64 架构与 SHA-256。
 2. 双击 `Codex-One-Click-Windows-x64-Offline-Setup.exe`。
-3. 选择服务商、模型与认证模式；按需打开官方 API Key 申请页。
+3. 选择服务商、模型、认证模式和预设皮肤；按需打开官方 API Key 申请页。
 4. 检查完成页中的应用、3 个已配置市场/9 个已配置插件、5 个离线插件、4 个运行时待供应插件、完整脚本市场和监控状态。
 5. 妥善保存脱敏安装报告；密钥只在受信任的本机界面输入。
 

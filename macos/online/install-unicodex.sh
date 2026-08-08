@@ -5,6 +5,9 @@ umask 077
 OPENAI_ARM_URL='https://persistent.oaistatic.com/codex-app-prod/Codex.dmg'
 OPENAI_X64_URL='https://persistent.oaistatic.com/codex-app-prod/Codex-latest-x64.dmg'
 CODEX_PLUS_REPOSITORY='BigPizzaV3/CodexPlusPlus'
+DREAM_SKIN_VERSION='1.5.11'
+DREAM_SKIN_URL="https://github.com/Fei-Away/Codex-Dream-Skin/releases/download/v${DREAM_SKIN_VERSION}/CodexDreamSkin-v${DREAM_SKIN_VERSION}.dmg"
+DREAM_SKIN_SHA256='755ed9b8189193ec4be3d69c6625a10910ea8b33718465b2f1e000c5ccbdcba1'
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORK_ROOT="$(/usr/bin/mktemp -d "${TMPDIR:-/tmp}/uni-codex.XXXXXX")"
 MOUNTS=()
@@ -27,6 +30,28 @@ download() {
   /usr/bin/curl --fail --location --retry 3 --connect-timeout 20 --max-time 1800 \
     --output "$destination" "$url"
   [[ -s "$destination" ]] || { printf '下载文件为空：%s\n' "$url" >&2; exit 65; }
+}
+
+download_verified() {
+  local url="$1" destination="$2" expected="$3"
+  download "$url" "$destination"
+  local actual
+  actual="$(/usr/bin/shasum -a 256 "$destination" | /usr/bin/awk '{print tolower($1)}')"
+  [[ "$actual" == "$expected" ]] || { printf 'SHA-256 校验失败：%s\n' "$url" >&2; exit 65; }
+}
+
+choose_dream_skin() {
+  if [[ -n "${UNICODEX_DREAM_SKIN_PRESET:-}" ]]; then
+    DREAM_SKIN_PRESET="$UNICODEX_DREAM_SKIN_PRESET"
+  else
+    printf '\n选择预设皮肤：\n  1) Gothic Void Crusade（推荐）\n  2) 官方默认外观（不启用 Dream Skin）\n请输入编号 [1]: '
+    read -r choice || choice=1
+    [[ "$choice" == 2 ]] && DREAM_SKIN_PRESET='none' || DREAM_SKIN_PRESET='preset-gothic-void-crusade'
+  fi
+  case "$DREAM_SKIN_PRESET" in
+    preset-gothic-void-crusade|none) ;;
+    *) printf '不支持的 Dream Skin 预设：%s\n' "$DREAM_SKIN_PRESET" >&2; exit 64 ;;
+  esac
 }
 
 mount_dmg() {
@@ -96,6 +121,16 @@ for app_name in 'Codex++.app' 'Codex++ 管理工具.app'; do
   /usr/bin/sudo /usr/bin/ditto "$app" "/Applications/$app_name"
 done
 /usr/bin/hdiutil detach "$codex_plus_mount" >/dev/null
+
+choose_dream_skin
+if [[ "$DREAM_SKIN_PRESET" == 'preset-gothic-void-crusade' ]]; then
+  printf '正在安装 Codex Dream Skin（Gothic Void Crusade）…\n'
+  dream_skin_dmg="$WORK_ROOT/CodexDreamSkin-v${DREAM_SKIN_VERSION}.dmg"
+  download_verified "$DREAM_SKIN_URL" "$dream_skin_dmg" "$DREAM_SKIN_SHA256"
+  install_app_from_dmg "$dream_skin_dmg" 'CodexDreamSkin.app'
+else
+  printf '保留官方默认外观。\n'
+fi
 
 printf '正在安装科研技能合集…\n'
 UNICODEX_SKILL_MANIFEST="$SCRIPT_DIR/skills/collections.json" \

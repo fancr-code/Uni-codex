@@ -5,7 +5,10 @@ using System.Text.Json;
 
 namespace CodexOneClickInstaller;
 
-public sealed record StartupOptions(string PayloadRoot, string? CiSmokeReport);
+public sealed record StartupOptions(
+    string PayloadRoot,
+    string? CiSmokeReport,
+    string? DreamSkinSetupPath = null);
 
 public static class StartupContract
 {
@@ -27,6 +30,7 @@ public static class StartupContract
 
         string? payloadCandidate = null;
         string? reportCandidate = null;
+        string? dreamSkinCandidate = null;
         for (var index = 0; index < arguments.Count; index += 2)
         {
             if (index + 1 >= arguments.Count
@@ -43,6 +47,9 @@ public static class StartupContract
                     break;
                 case "--ci-smoke-report" when reportCandidate is null:
                     reportCandidate = arguments[index + 1];
+                    break;
+                case "--dream-skin-setup" when dreamSkinCandidate is null:
+                    dreamSkinCandidate = arguments[index + 1];
                     break;
                 default:
                     throw new ArgumentException(
@@ -76,7 +83,21 @@ public static class StartupContract
                 throw new IOException("CI smoke report is a symbolic link or reparse point.");
             }
         }
-        return new StartupOptions(payloadRoot, report);
+        string? dreamSkinSetup = null;
+        if (dreamSkinCandidate is not null)
+        {
+            if (!Path.IsPathFullyQualified(dreamSkinCandidate))
+                throw new ArgumentException("Dream Skin setup path must be absolute.");
+            dreamSkinSetup = Path.GetFullPath(dreamSkinCandidate);
+            if (!File.Exists(dreamSkinSetup))
+                throw new FileNotFoundException("Dream Skin setup is missing.", dreamSkinSetup);
+            var setupParent = Path.GetDirectoryName(dreamSkinSetup)
+                              ?? throw new ArgumentException("Dream Skin setup has no parent.");
+            AssertNoReparsePoints(setupParent);
+            if ((File.GetAttributes(dreamSkinSetup) & FileAttributes.ReparsePoint) != 0)
+                throw new IOException("Dream Skin setup is a symbolic link or reparse point.");
+        }
+        return new StartupOptions(payloadRoot, report, dreamSkinSetup);
     }
 
     public static void WriteCiSmokeEvidence(StartupOptions options)
